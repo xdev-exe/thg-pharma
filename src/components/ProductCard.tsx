@@ -2,14 +2,14 @@ import React from 'react';
 import { Product } from '../types';
 import { useApp } from '../context/AppContext';
 import { formatEGP } from '../lib/utils';
-import { ShoppingBag, BellRing, Sparkles, Check, Info, ShieldCheck } from 'lucide-react';
+import { ShoppingBag, BellRing, Sparkles, Check, Info, ShieldCheck, Zap } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { lang, t, addToCart, openProductDetails, openRestockAlert } = useApp();
+  const { lang, t, addToCart, buyNow, openProductDetails, openRestockAlert } = useApp();
 
   return (
     <div className="group relative flex flex-col bg-white rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden card-hover">
@@ -121,32 +121,56 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             </div>
           </div>
 
-          {/* Action CTAs */}
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => openProductDetails(product)}
-              className="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1 cursor-pointer"
-            >
-              <Info size={14} />
-              <span>{t('تفاصيل التركيبة', 'Full Specs')}</span>
-            </button>
-
+          {/* Fast Checkout CTA Hierarchy */}
+          <div className="space-y-2">
             {product.inStock ? (
-              <button
-                onClick={() => addToCart(product)}
-                className="w-full py-2.5 px-3 bg-[#C8102E] hover:bg-[#9B0D24] text-white font-bold text-xs rounded-xl transition-all shadow-sm hover:shadow-md flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
-              >
-                <ShoppingBag size={14} />
-                <span>{t('إضافة للسلة', 'Add to Bag')}</span>
-              </button>
+              <>
+                {/* Instant Checkout / Buy Now */}
+                <button
+                  onClick={() => buyNow(product)}
+                  className="w-full py-3 px-4 bg-[#C8102E] hover:bg-[#9B0D24] text-white font-black text-xs sm:text-sm rounded-xl transition-all shadow-md shadow-red-900/20 hover:shadow-red-900/35 flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+                >
+                  <Zap size={16} className="fill-white" />
+                  <span>{t('شراء فوري (الدفع عند الاستلام)', 'Buy Now (Cash on Delivery)')}</span>
+                </button>
+
+                {/* Secondary Row: Add to Bag + Details */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => addToCart(product)}
+                    className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <ShoppingBag size={14} />
+                    <span>{t('إضافة للسلة', 'Add to Bag')}</span>
+                  </button>
+
+                  <button
+                    onClick={() => openProductDetails(product)}
+                    className="py-2.5 px-3 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <Info size={14} />
+                    <span>{t('التفاصيل', 'Details')}</span>
+                  </button>
+                </div>
+              </>
             ) : (
-              <button
-                onClick={() => openRestockAlert(product)}
-                className="w-full py-2.5 px-3 bg-[#0A1628] hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <BellRing size={14} className="text-[#D4A843]" />
-                <span>{t('احجز الشحنة القادمة', 'Join Waitlist')}</span>
-              </button>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => openRestockAlert(product)}
+                  className="w-full py-3 px-3 bg-[#0A1628] hover:bg-slate-800 text-white font-bold text-xs rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <BellRing size={14} className="text-[#D4A843]" />
+                  <span>{t('حجز الشحنة القادمة', 'Join Waitlist')}</span>
+                </button>
+
+                <button
+                  onClick={() => openProductDetails(product)}
+                  className="w-full py-3 px-3 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                >
+                  <Info size={14} />
+                  <span>{t('التفاصيل', 'Details')}</span>
+                </button>
+              </div>
             )}
           </div>
         </div>

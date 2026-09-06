@@ -12,11 +12,12 @@ import {
   AlertCircle,
   HelpCircle,
   Table,
-  ChevronDown
+  ChevronDown,
+  Zap
 } from 'lucide-react';
 
 export const ProductModal: React.FC = () => {
-  const { activeModal, closeModal, selectedProduct, lang, t, addToCart, openRestockAlert } = useApp();
+  const { activeModal, closeModal, selectedProduct, lang, t, addToCart, buyNow, openRestockAlert } = useApp();
   const [activeTab, setActiveTab] = useState<'formula' | 'usage' | 'faqs'>('formula');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
 
@@ -260,38 +261,51 @@ export const ProductModal: React.FC = () => {
           )}
         </div>
 
-        {/* Sticky Modal Footer (Price + Add to Cart) */}
-        <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200 shrink-0 flex items-center justify-between gap-4">
-          <div>
-            <div className="text-[10px] text-slate-400 font-bold uppercase">
+        {/* Sticky Modal Footer (Price + Add to Cart + Buy Now) */}
+        <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+          <div className="w-full sm:w-auto flex items-center justify-between sm:block">
+            <span className="text-[10px] text-slate-400 font-bold uppercase block">
               {t('السعر بالجنيه المصري (شحن مجاني)', 'Price (Free Delivery)')}
-            </div>
-            <div className="text-2xl font-black text-slate-900">
+            </span>
+            <div className="text-xl sm:text-2xl font-black text-slate-900">
               {formatEGP(product.price, lang)}
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="w-full sm:w-auto flex items-center gap-2 sm:gap-3">
             {product.inStock ? (
-              <button
-                onClick={() => {
-                  addToCart(product);
-                  closeModal();
-                }}
-                className="bg-[#C8102E] hover:bg-[#9B0D24] text-white font-bold text-sm px-6 py-3.5 rounded-full shadow-lg shadow-red-900/20 transition-all flex items-center gap-2 active:scale-95 cursor-pointer"
-              >
-                <ShoppingBag size={18} />
-                <span>{t('إضافة إلى السلة', 'Add to Bag')}</span>
-              </button>
+              <>
+                <button
+                  onClick={() => {
+                    closeModal();
+                    buyNow(product);
+                  }}
+                  className="flex-1 sm:flex-initial bg-[#C8102E] hover:bg-[#9B0D24] text-white font-black text-xs sm:text-sm px-5 py-3 rounded-full shadow-md shadow-red-900/20 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
+                >
+                  <Zap size={16} className="fill-white" />
+                  <span>{t('شراء فوري (دفع عند الاستلام)', 'Buy Now (COD)')}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    addToCart(product);
+                    closeModal();
+                  }}
+                  className="bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs sm:text-sm px-4 py-3 rounded-full transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <ShoppingBag size={16} />
+                  <span>{t('السلة', 'Bag')}</span>
+                </button>
+              </>
             ) : (
               <button
                 onClick={() => {
                   closeModal();
                   openRestockAlert(product);
                 }}
-                className="bg-[#0A1628] hover:bg-slate-800 text-white font-bold text-sm px-6 py-3.5 rounded-full transition-all flex items-center gap-2 cursor-pointer"
+                className="w-full sm:w-auto bg-[#0A1628] hover:bg-slate-800 text-white font-bold text-xs sm:text-sm px-6 py-3.5 rounded-full transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <BellRing size={18} className="text-[#D4A843]" />
+                <BellRing size={16} className="text-[#D4A843]" />
                 <span>{t('إشعار فور وصول الشحنة', 'Alert When In Stock')}</span>
               </button>
             )}

@@ -25,7 +25,8 @@ interface AppContextType {
 
   // Cart
   cart: CartItem[];
-  addToCart: (p: Product, qty?: number) => void;
+  addToCart: (p: Product, qty?: number, autoOpenCart?: boolean) => void;
+  buyNow: (p: Product, qty?: number) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, qty: number) => void;
   clearCart: () => void;
@@ -124,7 +125,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Cart operations
-  const addToCart = (product: Product, quantity = 1) => {
+  const addToCart = (product: Product, quantity = 1, autoOpenCart = true) => {
     if (!product.inStock) {
       openRestockAlert(product);
       return;
@@ -148,6 +149,31 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         : `Added ${product.name_en} to your bag 🛍️`,
       'success'
     );
+
+    if (autoOpenCart) {
+      openModal('cart');
+    }
+  };
+
+  const buyNow = (product: Product, quantity = 1) => {
+    if (!product.inStock) {
+      openRestockAlert(product);
+      return;
+    }
+
+    setCart((prev) => {
+      const existing = prev.find((item) => item.product.id === product.id);
+      if (existing) {
+        return prev.map((item) =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      }
+      return [...prev, { product, quantity }];
+    });
+
+    openModal('checkout');
   };
 
   const removeFromCart = (productId: string) => {
@@ -242,6 +268,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         openRestockAlert,
         cart,
         addToCart,
+        buyNow,
         removeFromCart,
         updateQuantity,
         clearCart,

@@ -13,6 +13,7 @@ import { RoutineQuizModal } from './components/RoutineQuizModal';
 import { RestockModal } from './components/RestockModal';
 import { HeritageSection } from './components/HeritageSection';
 import { WhatsAppButton } from './components/WhatsAppButton';
+import { StickyBottomBar } from './components/StickyBottomBar';
 import { Footer } from './components/Footer';
 import { Sparkles, CheckCircle, AlertCircle, Info, ShieldCheck } from 'lucide-react';
 
@@ -20,7 +21,7 @@ export const App: React.FC = () => {
   const { filteredProducts, t, toasts } = useApp();
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
+    <div className="min-h-screen flex flex-col bg-[#F8FAFC] w-full max-w-full overflow-x-hidden relative">
       {/* Sticky Global Navigation */}
       <Header />
 
@@ -110,8 +111,9 @@ export const App: React.FC = () => {
       {/* Footer */}
       <Footer />
 
-      {/* Floating WhatsApp Concierge */}
+      {/* Floating WhatsApp Concierge & Mobile Sticky Checkout Bar */}
       <WhatsAppButton />
+      <StickyBottomBar />
 
       {/* Interactive Modals */}
       <ProductModal />
