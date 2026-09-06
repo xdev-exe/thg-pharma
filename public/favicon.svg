@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <rect width="100" height="100" rx="22" fill="#AC1C1C"/>
+  <!-- Doppelherz Double Heart Emblem -->
+  <!-- Left Heart (Back) -->
+  <path d="M40 28 C30 20 18 28 18 42 C18 56 36 70 42 74 C43 73 45 71 47 69 C41 64 30 52 30 42 C30 33 38 28 43 33 C45 35 47 38 48 40 C49 38 51 35 53 33 C55 31 58 29 60 29 C55 25 46 23 40 28 Z" fill="#D0A66F" fill-opacity="0.85"/>
+  <!-- Right Heart (Front Hero) -->
+  <path d="M58 32 C50 24 38 32 38 46 C38 60 56 74 62 78 C68 74 86 60 86 46 C86 32 74 24 62 34 C58 38 56 40 58 32 Z" fill="#FFFFFF"/>
+  <path d="M62 38 C70 30 80 37 80 47 C80 57 66 68 62 71 C58 68 44 57 44 47 C44 37 54 30 62 38 Z" fill="#E30420"/>
+</svg>
