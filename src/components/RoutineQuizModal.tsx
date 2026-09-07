@@ -311,17 +311,26 @@ export const RoutineQuizModal: React.FC = () => {
                     key={product.id}
                     className="p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 flex flex-col justify-between space-y-3"
                   >
-                    <div>
-                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1">
-                        <span>🇩🇪 {t('ألماني صيدلاني', 'German Pharma')}</span>
-                        <span className="text-[#C8102E]">{formatEGP(product.price, lang)}</span>
+                    <div className="flex gap-3">
+                      <div className="w-16 h-20 shrink-0 bg-white p-1 rounded-xl border border-slate-200 flex items-center justify-center overflow-hidden">
+                        <img
+                          src={product.imageThumb || product.image}
+                          alt={lang === 'ar' ? product.name_ar : product.name_en}
+                          className="h-full w-auto object-contain"
+                        />
                       </div>
-                      <h5 className="font-extrabold text-sm text-slate-900">
-                        {lang === 'ar' ? product.name_ar : product.name_en}
-                      </h5>
-                      <p className="text-xs text-slate-600 mt-1 line-clamp-2">
-                        {lang === 'ar' ? product.tagline_ar : product.tagline_en}
-                      </p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1">
+                          <span>🇩🇪 {t('ألماني صيدلاني', 'German Pharma')}</span>
+                          <span className="text-[#C8102E] font-black">{formatEGP(product.price, lang)}</span>
+                        </div>
+                        <h5 className="font-extrabold text-xs sm:text-sm text-slate-900 leading-snug">
+                          {lang === 'ar' ? product.name_ar : product.name_en}
+                        </h5>
+                        <p className="text-xs text-slate-600 mt-1 line-clamp-2">
+                          {lang === 'ar' ? product.tagline_ar : product.tagline_en}
+                        </p>
+                      </div>
                     </div>
 
                     <div className="flex gap-2 pt-2 border-t border-slate-200">

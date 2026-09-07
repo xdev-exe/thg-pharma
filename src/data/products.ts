@@ -88,6 +88,8 @@ export const PRODUCTS: Product[] = [
     ],
     accentColor: '#00438E',
     icon: 'Fish',
+    image: '/images/products/pure-3.webp',
+    imageThumb: '/images/products/pure-3-thumb.webp',
     isHero: true
   },
   {
@@ -168,7 +170,9 @@ export const PRODUCTS: Product[] = [
       }
     ],
     accentColor: '#C8102E',
-    icon: 'Sparkles'
+    icon: 'Sparkles',
+    image: '/images/products/collagen-1000.webp',
+    imageThumb: '/images/products/collagen-1000-thumb.webp'
   },
   {
     id: 'belle-hairnakin',
@@ -256,7 +260,9 @@ export const PRODUCTS: Product[] = [
       }
     ],
     accentColor: '#1B2D4A',
-    icon: 'Feather'
+    icon: 'Feather',
+    image: '/images/products/belle-hairnakin.webp',
+    imageThumb: '/images/products/belle-hairnakin-thumb.webp'
   },
   {
     id: 'iron-direct',
@@ -335,7 +341,9 @@ export const PRODUCTS: Product[] = [
       }
     ],
     accentColor: '#C8102E',
-    icon: 'Zap'
+    icon: 'Zap',
+    image: '/images/products/iron-direct.webp',
+    imageThumb: '/images/products/iron-direct-thumb.webp'
   },
   {
     id: 'vital-materna-plus',
@@ -415,7 +423,9 @@ export const PRODUCTS: Product[] = [
       }
     ],
     accentColor: '#9B0D24',
-    icon: 'Heart'
+    icon: 'Heart',
+    image: '/images/products/vital-materna-plus.webp',
+    imageThumb: '/images/products/vital-materna-plus-thumb.webp'
   },
   {
     id: 'diavit',
@@ -497,6 +507,8 @@ export const PRODUCTS: Product[] = [
       }
     ],
     accentColor: '#1B2D4A',
-    icon: 'Activity'
+    icon: 'Activity',
+    image: '/images/products/diavit.webp',
+    imageThumb: '/images/products/diavit-thumb.webp'
   }
 ];

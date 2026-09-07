@@ -52,6 +52,8 @@ export interface Product {
   faqs: FAQ[];
   accentColor: string;
   icon: string;
+  image: string;
+  imageThumb: string;
   isHero?: boolean;
 }
 

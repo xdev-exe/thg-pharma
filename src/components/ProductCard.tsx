@@ -2,7 +2,7 @@ import React from 'react';
 import { Product } from '../types';
 import { useApp } from '../context/AppContext';
 import { formatEGP } from '../lib/utils';
-import { ShoppingBag, BellRing, Sparkles, Check, Info, ShieldCheck, Zap } from 'lucide-react';
+import { ShoppingBag, BellRing, Check, Info, ShieldCheck, Zap } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -12,89 +12,105 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { lang, t, addToCart, buyNow, openProductDetails, openRestockAlert } = useApp();
 
   return (
-    <div className="group relative flex flex-col bg-white rounded-3xl border border-slate-200/90 shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden card-hover">
-      {/* Top Banner / Visual Header */}
-      <div
-        className="relative p-6 pb-8 text-white overflow-hidden"
-        style={{
-          background: `linear-gradient(135deg, ${product.accentColor} 0%, #0A1628 100%)`,
-        }}
-      >
-        {/* Subtle decorative circle */}
-        <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none" />
-
-        {/* Top Badges: Stock Status + Highlight */}
-        <div className="flex items-center justify-between gap-2 text-xs font-bold mb-4">
-          <span className="bg-white/20 backdrop-blur-md text-white px-3 py-1 rounded-full border border-white/30 text-[11px] flex items-center gap-1">
+    <div className="group relative flex flex-col bg-white rounded-3xl border border-slate-200 shadow-xs hover:shadow-xl transition-all duration-200 overflow-hidden card-hover">
+      {/* Product Image Showcase Area */}
+      <div className="relative bg-gradient-to-b from-slate-50 to-slate-100/70 p-6 flex flex-col items-center justify-center border-b border-slate-150 overflow-hidden min-h-[260px] sm:min-h-[280px]">
+        {/* Badges Overlay */}
+        <div className="absolute top-4 inset-x-4 flex items-center justify-between gap-2 z-10">
+          <span className="bg-[#0A1628]/90 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-bold flex items-center gap-1 shadow-xs">
             <span>🇩🇪</span>
-            <span>{t('ألماني صيدلاني أصلي', 'German GMP')}</span>
+            <span>{t('ألماني صيدلاني', 'German GMP')}</span>
           </span>
 
           {product.badge_ar && (
-            <span className="bg-[#D4A843] text-[#0A1628] px-2.5 py-0.5 rounded-full text-[11px] font-black shadow-xs">
+            <span className="bg-[#C8102E] text-white px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-black shadow-xs">
               {lang === 'ar' ? product.badge_ar : product.badge_en}
             </span>
           )}
         </div>
 
-        {/* Product SKU Header Graphic / Pack Size Indicator */}
-        <div className="flex items-center justify-between mt-2">
-          <div>
-            <span className="text-[10px] tracking-wider uppercase font-extrabold text-white/70 block">
-              {t('مستورد حصري THG 4 Pharma', 'Exclusive Import by THG')}
-            </span>
-            <h3 className="text-xl sm:text-2xl font-black text-white mt-1 leading-snug">
-              {lang === 'ar' ? product.name_ar.split('—')[0] : product.name_en.split('—')[0]}
-            </h3>
-            <p className="text-xs text-white/90 font-medium mt-0.5">
-              {lang === 'ar' ? product.name_ar.split('—')[1] : product.name_en.split('—')[1]}
-            </p>
-          </div>
+        {/* Ambient colored glow behind product */}
+        <div
+          className="absolute w-40 h-40 rounded-full blur-2xl opacity-20 pointer-events-none group-hover:opacity-35 transition-opacity"
+          style={{ backgroundColor: product.accentColor }}
+        />
 
-          <div className="w-14 h-14 rounded-2xl bg-white/15 backdrop-blur-md border border-white/30 flex items-center justify-center text-white shrink-0 shadow-inner group-hover:scale-110 transition-transform">
-            <Sparkles size={24} className="text-[#D4A843]" />
-          </div>
-        </div>
+        {/* Product Box Image */}
+        <button
+          onClick={() => openProductDetails(product)}
+          className="relative z-10 w-full flex items-center justify-center pt-6 pb-2 cursor-pointer focus:outline-none"
+          title={t('عرض التفاصيل الكاملة', 'View Details')}
+        >
+          <picture>
+            <source srcSet={product.image} type="image/webp" />
+            <img
+              src={product.image.replace('.webp', '.jpg')}
+              alt={lang === 'ar' ? product.name_ar : product.name_en}
+              className="h-44 sm:h-52 w-auto object-contain drop-shadow-[0_12px_20px_rgba(0,0,0,0.14)] group-hover:scale-105 transition-transform duration-200"
+              loading="lazy"
+            />
+          </picture>
+        </button>
 
-        {/* Supply Days Pill */}
-        <div className="mt-4 flex items-center gap-2">
-          <span className="text-[11px] bg-black/30 backdrop-blur-sm text-slate-100 px-2.5 py-1 rounded-md font-semibold">
+        {/* Bottom Pill on Image: Pack Size */}
+        <div className="absolute bottom-3 inset-x-4 flex items-center justify-between text-[11px]">
+          <span className="bg-white/90 backdrop-blur-sm text-slate-700 px-2.5 py-0.5 rounded-md font-bold shadow-2xs border border-slate-200/80">
             {lang === 'ar' ? product.packSize_ar : product.packSize_en} •{' '}
-            {t(`تكفي ${product.supplyDays} يوماً`, `${product.supplyDays}-day supply`)}
+            {t(`تكفي ${product.supplyDays} يوماً`, `${product.supplyDays}d supply`)}
+          </span>
+
+          <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">
+            THG 4 PHARMA
           </span>
         </div>
       </div>
 
       {/* Body Content */}
-      <div className="p-6 flex-1 flex flex-col justify-between space-y-5">
-        <div className="space-y-4">
+      <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-4">
+        <div className="space-y-3">
+          {/* Product Title */}
+          <div>
+            <span className="text-[10px] tracking-wider uppercase font-black text-[#C8102E] block">
+              {t('مستورد صيدلاني معتمد', 'Certified Pharma Import')}
+            </span>
+            <h3
+              onClick={() => openProductDetails(product)}
+              className="text-lg sm:text-xl font-black text-slate-900 mt-0.5 leading-snug cursor-pointer hover:text-[#C8102E] transition-colors"
+            >
+              {lang === 'ar' ? product.name_ar.split('—')[0] : product.name_en.split('—')[0]}
+            </h3>
+            <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
+              {lang === 'ar' ? product.name_ar.split('—')[1] : product.name_en.split('—')[1]}
+            </p>
+          </div>
+
           {/* Tagline / Main Differentiator */}
-          <p className="text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed">
+          <p className="text-xs font-semibold text-slate-700 leading-relaxed line-clamp-2">
             {lang === 'ar' ? product.tagline_ar : product.tagline_en}
           </p>
 
           {/* Key Declared Nutrients Matrix (Highlights) */}
-          <div className="bg-slate-50 rounded-2xl p-3 border border-slate-150 space-y-1.5">
-            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wide">
+          <div className="bg-slate-50 rounded-2xl p-2.5 border border-slate-150 space-y-1.5">
+            <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">
               {t('أبرز العناصر المعلنة بالمليجرام:', 'Declared Actives Breakdown:')}
             </div>
             <div className="grid grid-cols-2 gap-1.5">
               {product.nutrients.slice(0, 4).map((nut, idx) => (
-                <div key={idx} className="flex items-center justify-between text-[11px] bg-white px-2 py-1 rounded-md border border-slate-200">
-                  <span className="text-slate-600 truncate max-w-[90px]">
+                <div key={idx} className="flex items-center justify-between text-[11px] bg-white px-2 py-1 rounded-md border border-slate-200/80">
+                  <span className="text-slate-600 truncate max-w-[85px]">
                     {lang === 'ar' ? nut.name_ar.split('(')[0] : nut.name_en.split('(')[0]}
                   </span>
-                  <span className="font-extrabold text-[#0A1628] shrink-0">{nut.amount}</span>
+                  <span className="font-black text-[#0A1628] shrink-0 text-[10px] sm:text-[11px]">{nut.amount}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Bullet points benefits */}
-          <ul className="space-y-1.5 text-xs text-slate-600">
+          <ul className="space-y-1 text-xs text-slate-600">
             {product.benefits_ar.slice(0, 2).map((benefit, idx) => (
               <li key={idx} className="flex items-start gap-1.5">
-                <Check size={14} className="text-[#C8102E] shrink-0 mt-0.5" />
+                <Check size={13} className="text-[#C8102E] shrink-0 mt-0.5" />
                 <span className="line-clamp-1">{lang === 'ar' ? benefit : product.benefits_en[idx]}</span>
               </li>
             ))}
@@ -102,7 +118,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
 
         {/* Bottom Pricing & Action Buttons */}
-        <div className="pt-4 border-t border-slate-150 space-y-3">
+        <div className="pt-3 border-t border-slate-150 space-y-3">
           <div className="flex items-baseline justify-between">
             <div>
               <span className="text-[10px] text-slate-400 font-bold block uppercase">
@@ -130,7 +146,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   onClick={() => buyNow(product)}
                   className="w-full py-3 px-4 bg-[#C8102E] hover:bg-[#9B0D24] text-white font-black text-xs sm:text-sm rounded-xl transition-all shadow-md shadow-red-900/20 hover:shadow-red-900/35 flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
                 >
-                  <Zap size={16} className="fill-white" />
+                  <Zap size={15} className="fill-white" />
                   <span>{t('شراء فوري (الدفع عند الاستلام)', 'Buy Now (Cash on Delivery)')}</span>
                 </button>
 

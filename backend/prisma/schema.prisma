@@ -1,0 +1,73 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum OrderStatus {
+  confirmed
+  quality_check
+  in_transit
+  out_for_delivery
+  delivered
+  cancelled
+}
+
+model Order {
+  id                Int         @id @default(autoincrement())
+  trackingNumber    String      @unique @map("tracking_number") @db.VarChar(32)
+  customerName      String      @map("customer_name") @db.VarChar(160)
+  phone             String      @db.VarChar(20)
+  governorate       String      @db.VarChar(80)
+  address           String      @db.Text
+  notes             String?     @db.Text
+  paymentMethod     String      @default("cod") @map("payment_method") @db.VarChar(40)
+  currency          String      @default("EGP") @db.VarChar(3)
+  subtotal          Int
+  discount          Int         @default(0)
+  shipping          Int         @default(0)
+  total             Int
+  status            OrderStatus @default(confirmed)
+  estimatedDelivery String?     @map("estimated_delivery") @db.VarChar(120)
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  items             OrderItem[]
+
+  @@index([trackingNumber])
+  @@index([phone])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          Int    @id @default(autoincrement())
+  orderId     Int    @map("order_id")
+  productId   String @map("product_id") @db.VarChar(64)
+  productName String @map("product_name") @db.VarChar(255)
+  quantity    Int    @default(1)
+  unitPrice   Int    @map("unit_price")
+  lineTotal   Int    @map("line_total")
+
+  order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model RestockInterest {
+  id          Int      @id @default(autoincrement())
+  productId   String   @map("product_id") @db.VarChar(64)
+  productName String?  @map("product_name") @db.VarChar(255)
+  contact     String   @db.VarChar(64)
+  notified    Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([productId])
+  @@index([contact])
+  @@map("restock_interests")
+}

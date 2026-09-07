@@ -119,12 +119,13 @@ export const CartDrawer: React.FC = () => {
             ) : (
               cart.map((item) => (
                 <div key={item.product.id} className="py-4 flex gap-3.5 items-center">
-                  {/* Product Color Dot Visual Indicator */}
-                  <div
-                    className="w-12 h-12 rounded-xl shrink-0 flex items-center justify-center font-black text-white text-xs shadow-xs"
-                    style={{ backgroundColor: item.product.accentColor }}
-                  >
-                    THG
+                  {/* Product Thumbnail */}
+                  <div className="w-14 h-14 rounded-xl shrink-0 bg-slate-50 p-1 border border-slate-200 flex items-center justify-center overflow-hidden">
+                    <img
+                      src={item.product.imageThumb || item.product.image}
+                      alt={lang === 'ar' ? item.product.name_ar : item.product.name_en}
+                      className="h-full w-auto object-contain"
+                    />
                   </div>
 
                   {/* Info */}

@@ -102,11 +102,12 @@ export const RestockModal: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Product mini card */}
               <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center gap-3">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-xs shrink-0"
-                  style={{ backgroundColor: product.accentColor }}
-                >
-                  THG
+                <div className="w-12 h-14 rounded-xl shrink-0 bg-white p-1 border border-slate-200 flex items-center justify-center overflow-hidden">
+                  <img
+                    src={product.imageThumb || product.image}
+                    alt={lang === 'ar' ? product.name_ar : product.name_en}
+                    className="h-full w-auto object-contain"
+                  />
                 </div>
                 <div>
                   <h5 className="font-extrabold text-xs sm:text-sm text-slate-900">

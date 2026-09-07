@@ -41,39 +41,57 @@ export const ProductModal: React.FC = () => {
           {/* Close Button */}
           <button
             onClick={closeModal}
-            className="absolute top-5 left-5 rtl:left-auto rtl:right-5 p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors cursor-pointer"
+            className="absolute top-5 left-5 rtl:left-auto rtl:right-5 p-2 rounded-full bg-white/20 hover:bg-white/30 text-white transition-colors cursor-pointer z-10"
             aria-label="Close modal"
           >
             <X size={20} />
           </button>
 
-          <div className="flex items-center gap-2 text-xs font-bold mb-3">
-            <span className="bg-white/20 px-3 py-1 rounded-full text-white backdrop-blur-md border border-white/30">
-              🇩🇪 {t('صيدلاني ألماني معتمد — THG 4 Pharma', 'Certified German Pharma — THG 4 Pharma')}
-            </span>
-            <span className="bg-[#D4A843] text-[#0A1628] px-3 py-1 rounded-full font-black">
-              {lang === 'ar' ? product.packSize_ar : product.packSize_en}
-            </span>
-          </div>
+          <div className="grid sm:grid-cols-12 gap-6 items-center">
+            <div className="sm:col-span-8 space-y-3">
+              <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
+                <span className="bg-white/20 px-3 py-1 rounded-full text-white backdrop-blur-md border border-white/30">
+                  🇩🇪 {t('صيدلاني ألماني معتمد — THG 4 Pharma', 'Certified German Pharma — THG 4 Pharma')}
+                </span>
+                <span className="bg-[#D4A843] text-[#0A1628] px-3 py-1 rounded-full font-black">
+                  {lang === 'ar' ? product.packSize_ar : product.packSize_en}
+                </span>
+              </div>
 
-          <h2 className="text-2xl sm:text-3xl font-black leading-snug">
-            {lang === 'ar' ? product.name_ar : product.name_en}
-          </h2>
+              <h2 className="text-2xl sm:text-3xl font-black leading-snug">
+                {lang === 'ar' ? product.name_ar : product.name_en}
+              </h2>
 
-          <p className="text-slate-200 text-xs sm:text-sm mt-2 max-w-xl leading-relaxed">
-            {lang === 'ar' ? product.tagline_ar : product.tagline_en}
-          </p>
+              <p className="text-slate-200 text-xs sm:text-sm max-w-xl leading-relaxed">
+                {lang === 'ar' ? product.tagline_ar : product.tagline_en}
+              </p>
 
-          {/* Quick Metrics */}
-          <div className="mt-4 flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
-            <span className="bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-slate-100">
-              <Clock size={14} className="text-[#D4A843]" />
-              <span>{t(`تكفي ${product.supplyDays} يوماً بالجرعة المقررة`, `${product.supplyDays}-day supply per dosage`)}</span>
-            </span>
-            <span className="bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-slate-100">
-              <Sparkles size={14} className="text-emerald-400" />
-              <span>{lang === 'ar' ? product.servingBasis_ar : product.servingBasis_en}</span>
-            </span>
+              {/* Quick Metrics */}
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs pt-1">
+                <span className="bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-slate-100">
+                  <Clock size={14} className="text-[#D4A843]" />
+                  <span>{t(`تكفي ${product.supplyDays} يوماً`, `${product.supplyDays}-day supply`)}</span>
+                </span>
+                <span className="bg-black/30 backdrop-blur-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-slate-100">
+                  <Sparkles size={14} className="text-emerald-400" />
+                  <span>{lang === 'ar' ? product.servingBasis_ar : product.servingBasis_en}</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Product Pack Photo */}
+            <div className="sm:col-span-4 flex justify-center sm:justify-end">
+              <div className="relative bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/20 shadow-lg">
+                <picture>
+                  <source srcSet={product.image} type="image/webp" />
+                  <img
+                    src={product.image.replace('.webp', '.jpg')}
+                    alt={lang === 'ar' ? product.name_ar : product.name_en}
+                    className="h-36 sm:h-44 w-auto object-contain drop-shadow-md"
+                  />
+                </picture>
+              </div>
+            </div>
           </div>
         </div>
 
