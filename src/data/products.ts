@@ -92,8 +92,8 @@ export const PRODUCTS: Product[] = [
     imageThumb: '/images/products/pure-3-thumb.webp',
     searchAliases: [
       'doppelherz', 'doppel herz', 'doppelherz aktiv', 'pure-3', 'pure 3', 'doppelherz pure 3',
-      'دوبل هيرتز', 'دبل هيرتز', 'دوبلهيرتز', 'دوبل هيرتز بيور 3', 'بيور 3', 'اوميجا 3 دوبل هيرتز',
-      'زيت سمك الماني', 'queisser pharma', 'omega 3 doppelherz', 'epa dha'
+      'دوبيل هيرز', 'دوبل هيرز', 'دوبيلهيرز', 'دبل هيرز', 'دوبيل هيرز بيور 3', 'بيور 3', 'اوميجا 3 دوبيل هيرز',
+      'دوبل هيرتز', 'زيت سمك الماني', 'queisser pharma', 'omega 3 doppelherz', 'epa dha'
     ],
     isHero: true
   },
@@ -180,8 +180,8 @@ export const PRODUCTS: Product[] = [
     imageThumb: '/images/products/collagen-1000-thumb.webp',
     searchAliases: [
       'doppelherz', 'doppel herz', 'doppelherz aktiv', 'collagen 1000', 'doppelherz collagen',
-      'دوبل هيرتز', 'دبل هيرتز', 'دوبلهيرتز', 'دوبل هيرتز كولاجين', 'كولاجين 1000 دوبل هيرتز',
-      'كولاجين الماني', 'queisser pharma', 'كولاجين كيو 10', 'coq10'
+      'دوبيل هيرز', 'دوبل هيرز', 'دوبيلهيرز', 'دبل هيرز', 'دوبيل هيرز كولاجين', 'كولاجين 1000 دوبيل هيرز',
+      'دوبل هيرتز كولاجين', 'كولاجين الماني', 'queisser pharma', 'كولاجين كيو 10', 'coq10'
     ]
   },
   {
@@ -275,8 +275,8 @@ export const PRODUCTS: Product[] = [
     imageThumb: '/images/products/belle-hairnakin-thumb.webp',
     searchAliases: [
       'doppelherz', 'doppel herz', 'doppelherz aktiv', 'belle hairnakin', 'doppelherz belle',
-      'دوبل هيرتز', 'دبل هيرتز', 'دوبلهيرتز', 'دوبل هيرتز بيل هيرناكن', 'بيل هيرناكن',
-      'فيتامين شعر دوبل هيرتز', 'سيليكون للشعر', 'queisser pharma', 'hair skin nails'
+      'دوبيل هيرز', 'دوبل هيرز', 'دوبيلهيرز', 'دبل هيرز', 'دوبيل هيرز بيل هيرناكن', 'بيل هيرناكن',
+      'دوبل هيرتز بيل هيرناكن', 'فيتامين شعر دوبيل هيرز', 'سيليكون للشعر', 'queisser pharma', 'hair skin nails'
     ]
   },
   {
@@ -361,8 +361,8 @@ export const PRODUCTS: Product[] = [
     imageThumb: '/images/products/iron-direct-thumb.webp',
     searchAliases: [
       'doppelherz', 'doppel herz', 'doppelherz aktiv', 'iron direct', 'doppelherz iron',
-      'دوبل هيرتز', 'دبل هيرتز', 'دوبلهيرتز', 'دوبل هيرتز حديد', 'حديد دايركت دوبل هيرتز',
-      'حديد ميكروبيليتس', 'حديد بدون امساك', 'queisser pharma', 'anemia'
+      'دوبيل هيرز', 'دوبل هيرز', 'دوبيلهيرز', 'دبل هيرز', 'دوبيل هيرز حديد', 'حديد دايركت دوبيل هيرز',
+      'دوبل هيرتز حديد', 'حديد ميكروبيليتس', 'حديد بدون امساك', 'queisser pharma', 'anemia'
     ]
   },
   {
@@ -448,8 +448,8 @@ export const PRODUCTS: Product[] = [
     imageThumb: '/images/products/vital-materna-plus-thumb.webp',
     searchAliases: [
       'doppelherz', 'doppel herz', 'doppelherz aktiv', 'vital materna', 'materna plus', 'doppelherz materna',
-      'دوبل هيرتز', 'دبل هيرتز', 'دوبلهيرتز', 'دوبل هيرتز ماترنا', 'فايتال ماترنا دوبل هيرتز',
-      'فيتامينات حمل دوبل هيرتز', 'queisser pharma', 'pregnancy vitamins'
+      'دوبيل هيرز', 'دوبل هيرز', 'دوبيلهيرز', 'دبل هيرز', 'دوبيل هيرز ماترنا', 'فايتال ماترنا دوبيل هيرز',
+      'دوبل هيرتز ماترنا', 'فيتامينات حمل دوبيل هيرز', 'queisser pharma', 'pregnancy vitamins'
     ]
   },
   {
@@ -537,8 +537,8 @@ export const PRODUCTS: Product[] = [
     imageThumb: '/images/products/diavit-thumb.webp',
     searchAliases: [
       'doppelherz', 'doppel herz', 'doppelherz aktiv', 'diavit', 'doppelherz diavit',
-      'دوبل هيرتز', 'دبل هيرتز', 'دوبلهيرتز', 'دوبل هيرتز ديافيت', 'ديافيت دوبل هيرتز',
-      'فيتامينات سكر المانية', 'queisser pharma', 'metabolic vitamins'
+      'دوبيل هيرز', 'دوبل هيرز', 'دوبيلهيرز', 'دبل هيرز', 'دوبيل هيرز ديافيت', 'ديافيت دوبيل هيرز',
+      'دوبل هيرتز ديافيت', 'فيتامينات سكر المانية', 'queisser pharma', 'metabolic vitamins'
     ]
   }
 ];
