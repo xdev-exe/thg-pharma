@@ -199,8 +199,8 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
         (tracking_number, customer_name, phone, governorate, address, notes, payment_method, 
          subtotal, discount, shipping, total, estimated_delivery, status,
          ip_address, user_agent, device_type, device_model, os_name, os_version,
-         browser_name, browser_version, client_language, referrer, risk_score, is_suspicious, risk_flags)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         browser_name, browser_version, client_language, referrer, risk_score, is_suspicious, risk_flags, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         [
           trackingNumber,
           customerName.trim(),
