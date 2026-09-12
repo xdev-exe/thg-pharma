@@ -54,6 +54,7 @@ export interface Product {
   icon: string;
   image: string;
   imageThumb: string;
+  searchAliases?: string[];
   isHero?: boolean;
 }
 

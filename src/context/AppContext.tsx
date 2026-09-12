@@ -247,7 +247,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       p.name_ar.toLowerCase().includes(query) ||
       p.name_en.toLowerCase().includes(query) ||
       p.shortDesc_ar.toLowerCase().includes(query) ||
-      p.shortDesc_en.toLowerCase().includes(query);
+      p.shortDesc_en.toLowerCase().includes(query) ||
+      p.searchAliases?.some((alias) => alias.toLowerCase().includes(query));
 
     return matchesCategory && matchesSearch;
   });

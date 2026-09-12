@@ -3,7 +3,7 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
-  <!-- Homepage / Main Store -->
+  <!-- Main Homepage (Arabic Default & English Alternate) -->
   <url>
     <loc>https://thg4pharma.com/</loc>
     <lastmod>2026-09-12</lastmod>
@@ -13,46 +13,46 @@
     <xhtml:link rel="alternate" hreflang="en" href="https://thg4pharma.com/?lang=en" />
     <xhtml:link rel="alternate" hreflang="x-default" href="https://thg4pharma.com/" />
 
-    <!-- Pure-3 Product Image -->
+    <!-- Pure-3 / Doppelherz Pure-3 Image SEO -->
     <image:image>
       <image:loc>https://thg4pharma.com/images/products/pure-3.jpg</image:loc>
-      <image:title>Pure-3 أوميجا 3 ألماني عالي النقاوة والتركيز</image:title>
-      <image:caption>أوميجا 3 نقي بتقنية التقطير الجزيئي الألماني 600 مجم EPA و DHA بدون رائحة سمك</image:caption>
+      <image:title>Doppelherz aktiv Pure-3 Egypt | دوبل هيرتز بيور 3 أوميجا 3 عالي التركيز</image:title>
+      <image:caption>أوميجا 3 ألماني نقي من إنتاج كويسر فارما Queisser Pharma بدون رائحة سمك نهائياً 600 مجم EPA و DHA مستورد حصرياً بواسطة THG 4 Pharma مصر</image:caption>
     </image:image>
 
-    <!-- Collagen 1000 Product Image -->
+    <!-- Collagen 1000 / Doppelherz Collagen 1000 Image SEO -->
     <image:image>
       <image:loc>https://thg4pharma.com/images/products/collagen-1000.jpg</image:loc>
-      <image:title>Collagen 1000 كولاجين هيدروليزات مع كوانزيم Q10 وبيوتين</image:title>
-      <image:caption>1000 مجم كولاجين متحلل ألماني مدعم بإنزيم الطاقة الخلوية Q10 وبيوتين مكثف</image:caption>
+      <image:title>Doppelherz aktiv Collagen 1000 Egypt | كولاجين 1000 دوبل هيرتز كيو 10 وبيوتين</image:title>
+      <image:caption>1000 مجم كولاجين متحلل ألماني مع كوانزيم CoQ10 وبيوتين 500 ميكروجرام لنضارة البشرة ومرونة الأنسجة من مستورد دوبل هيرتز المعتمد THG 4 Pharma</image:caption>
     </image:image>
 
-    <!-- Belle Hairnakin Product Image -->
+    <!-- Belle Hairnakin / Doppelherz Belle Hairnakin Image SEO -->
     <image:image>
       <image:loc>https://thg4pharma.com/images/products/belle-hairnakin.jpg</image:loc>
-      <image:title>Belle Hairnakin مصفوفة السيليكون والبيوتين للشعر والبشرة والأظافر</image:title>
-      <image:caption>205 مجم سيليكون نقي مع 14 عنصراً غذائياً معلناً لقوة بصيلات الشعر</image:caption>
+      <image:title>Doppelherz aktiv Belle Hairnakin Egypt | دوبل هيرتز بيل هيرناكن للشعر والأظافر</image:title>
+      <image:caption>205 مجم سيليكون نقي مع 14 عنصراً غذائياً معلناً تشمل البيوتين والزنك والسيلينيوم والكولاجين لتقوية بصيلات الشعر ومقاومة التساقط</image:caption>
     </image:image>
 
-    <!-- Iron DIRECT Product Image -->
+    <!-- Iron DIRECT / Doppelherz Iron DIRECT Image SEO -->
     <image:image>
       <image:loc>https://thg4pharma.com/images/products/iron-direct.jpg</image:loc>
-      <image:title>Iron DIRECT حديد مباشر ميكروبيليتس بطعم التوت البري</image:title>
-      <image:caption>حديد ألماني سريع الذوبان على اللسان بدون ماء وبدون إمساك أو مشاكل معدة</image:caption>
+      <image:title>Doppelherz aktiv Iron DIRECT Egypt | حديد دايركت ميكروبيليتس دوبل هيرتز بالتوت البري</image:title>
+      <image:caption>أكياس حديد ألماني تذوب على اللسان بدون ماء وبدون إمساك أو آلام معدة 16 مجم حديد مع فيتامين C للامتصاص الأقصى</image:caption>
     </image:image>
 
-    <!-- Vital Materna PLUS Product Image -->
+    <!-- Vital Materna PLUS / Doppelherz Vital Materna PLUS Image SEO -->
     <image:image>
       <image:loc>https://thg4pharma.com/images/products/vital-materna-plus.jpg</image:loc>
-      <image:title>Vital Materna PLUS تغذية الأم والتخطيط للحمل والرضاعة</image:title>
-      <image:caption>20 عنصراً ميكروياً معلناً تشمل DHA وحمض الفوليك والحديد واليود لدعم الأم وجنينها</image:caption>
+      <image:title>Doppelherz aktiv Vital Materna PLUS Egypt | دوبل هيرتز فايتال ماترنا بلس للحمل والرضاعة</image:title>
+      <image:caption>20 عنصراً ميكروياً معلناً تشمل 252 مجم DHA أوميجا 3، 800 ميكروجرام حمض فوليك، وحديد ويود لصحة الأم والجنين</image:caption>
     </image:image>
 
-    <!-- DiaVit Product Image -->
+    <!-- DiaVit / Doppelherz DiaVit Image SEO -->
     <image:image>
       <image:loc>https://thg4pharma.com/images/products/diavit.jpg</image:loc>
-      <image:title>DiaVit فيتامينات ومعادن التوازن الأيضي والحيوية اليومية</image:title>
-      <image:caption>14 عنصراً غذائياً معلناً يشمل الماغنيسيوم والكروميوم والسيلينيوم لحيوية ونشاط مستمر</image:caption>
+      <image:title>Doppelherz aktiv DiaVit Egypt | دوبل هيرتز ديافيت فيتامينات ومعادن التوازن الأيضي</image:title>
+      <image:caption>14 عنصراً غذائياً معلناً تشمل 200 مجم ماغنيسيوم وكروميوم وسيلينيوم وفيتامينات B المركبة لدعم التمثيل الغذائي والحيوية اليومية</image:caption>
     </image:image>
   </url>
 
