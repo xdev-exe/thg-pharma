@@ -1,0 +1,13 @@
+# Robots.txt for THG 4 Pharma (True Health Goals)
+# https://thg4pharma.com
+
+User-agent: *
+Allow: /
+Allow: /images/
+Allow: /images/products/
+
+# Disallow internal API endpoints from crawling
+Disallow: /api/
+
+# Sitemap location for Googlebot & search crawlers
+Sitemap: https://thg4pharma.com/sitemap.xml
