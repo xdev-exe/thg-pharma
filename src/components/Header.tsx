@@ -37,7 +37,7 @@ export const Header: React.FC = () => {
             </span>
             <span className="truncate">
               {t(
-                'شحن مجاني لكافة محافظات مصر الـ 27 مع الدفع عند الاستلام 🇪🇬',
+                'شحن مجاني لكل محافظات مصر الـ 27 • عاين طلبيتك وادفع براحتك عند الاستلام 🇪🇬',
                 'Free Express Shipping across all 27 Egyptian Governorates with COD 🇪🇬'
               )}
             </span>
@@ -56,7 +56,7 @@ export const Header: React.FC = () => {
               className="flex items-center gap-1 hover:text-white transition-colors"
             >
               <PhoneCall size={12} className="text-emerald-400" />
-              <span>01210527717</span>
+              <span>{t('كلمنا واتساب: 01210527717', 'WhatsApp: 01210527717')}</span>
             </a>
           </div>
         </div>
@@ -79,26 +79,26 @@ export const Header: React.FC = () => {
               onClick={() => scrollToSection('products')}
               className="hover:text-[#C8102E] transition-colors py-2 border-b-2 border-transparent hover:border-[#C8102E] cursor-pointer"
             >
-              {t('تشكيلة المكملات الألمانية', 'German Supplements')}
+              {t('مكملاتنا الألمانية', 'German Supplements')}
             </button>
             <button
               onClick={() => openModal('quiz')}
               className="flex items-center gap-1.5 text-[#C8102E] bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full transition-all border border-red-200/60 shadow-xs hover:scale-105 cursor-pointer"
             >
               <Sparkles size={14} className="animate-pulse" />
-              <span>{t('اختر مكمّلك', 'Supplement Diagnostic')}</span>
+              <span>{t('محتار؟ نساعدك تختار', 'Supplement Diagnostic')}</span>
             </button>
             <button
               onClick={() => scrollToSection('heritage')}
               className="hover:text-[#C8102E] transition-colors py-2 border-b-2 border-transparent hover:border-[#C8102E] cursor-pointer"
             >
-              {t('عن THG والمعايير', 'About THG Standards')}
+              {t('حكايتنا في THG', 'About THG Standards')}
             </button>
             <button
               onClick={() => openModal('tracking')}
               className="hover:text-[#C8102E] transition-colors py-2 border-b-2 border-transparent hover:border-[#C8102E] cursor-pointer"
             >
-              {t('تتبع طلبك', 'Track Order')}
+              {t('شحنتك فين؟ تتبع طلبك', 'Track Order')}
             </button>
           </nav>
 

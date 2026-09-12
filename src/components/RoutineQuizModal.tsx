@@ -117,7 +117,7 @@ export const RoutineQuizModal: React.FC = () => {
                   {t('الخطوة 1 من 3', 'Step 1 of 3')}
                 </span>
                 <h4 className="text-lg sm:text-xl font-black text-slate-900 mt-1">
-                  {t('ما هو هدفك الصحي الأساسي في هذه الفترة؟', 'What is your primary wellness goal right now?')}
+                  {t('إيه أكتر حاجة تحب نركز عليها لصحتك في الفترة دي؟', 'What is your primary wellness goal right now?')}
                 </h4>
               </div>
 
@@ -131,10 +131,10 @@ export const RoutineQuizModal: React.FC = () => {
                   </div>
                   <div>
                     <div className="font-bold text-sm text-slate-900">
-                      {t('كثافة الشعر ونضارة البشرة والأظافر', 'Hair Density, Skin Elasticity & Nails')}
+                      {t('كثافة الشعر ونضارة البشرة وقوة الأظافر', 'Hair Density, Skin & Nails')}
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5">
-                      {t('علاج التساقط، تحفيز الكولاجين، والسيليكون', 'Fortifying roots, collagen rebuilding & silicon')}
+                      {t('تقوية الجذور وعلاج التساقط مع السيليكون والكولاجين', 'Fortifying roots, collagen & silicon')}
                     </div>
                   </div>
                 </button>
@@ -148,10 +148,10 @@ export const RoutineQuizModal: React.FC = () => {
                   </div>
                   <div>
                     <div className="font-bold text-sm text-slate-900">
-                      {t('التغلب على الخمول ونقص الحديد والأنيميا', 'Overcoming Fatigue, Anemia & Iron Lack')}
+                      {t('التغلب على الخمول والإرهاق ونقص الحديد', 'Overcoming Fatigue & Iron Deficiency')}
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5">
-                      {t('رفع مخزون الحديد بدون إمساك أو مشاكل معدة', 'Restoring ferritin with zero stomach upset')}
+                      {t('رفع مخزون الحديد في الدم بدون إمساك أو وجع معدة', 'Restoring ferritin with zero stomach upset')}
                     </div>
                   </div>
                 </button>
@@ -165,10 +165,10 @@ export const RoutineQuizModal: React.FC = () => {
                   </div>
                   <div>
                     <div className="font-bold text-sm text-slate-900">
-                      {t('التركيز الذهني وصحة القلب والشرايين', 'Brain Clarity, Focus & Cardiovascular')}
+                      {t('التركيز الذهني والذاكرة ونشاط القلب', 'Brain Clarity, Memory & Cardiovascular')}
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5">
-                      {t('أوميجا 3 نقي عالي التركيز بدون طعم سمك', 'Ultra-pure EPA/DHA without fishy burps')}
+                      {t('أوميجا 3 ألماني عالي التركيز بدون طعم أو ريحة سمك', 'Ultra-pure EPA/DHA with zero fishy burps')}
                     </div>
                   </div>
                 </button>
@@ -185,7 +185,7 @@ export const RoutineQuizModal: React.FC = () => {
                       {t('التخطيط للحمل، فترة الحمل، أو الرضاعة', 'Pre-Conception, Pregnancy or Nursing')}
                     </div>
                     <div className="text-xs text-slate-500 mt-0.5">
-                      {t('مصفوفة متكاملة من 20 عنصراً تشمل DHA وفوليك', '20-nutrient matrix with DHA & Folic acid')}
+                      {t('تغذية متكاملة بـ 20 عنصراً تشمل DHA وحمض الفوليك', '20-nutrient matrix with DHA & Folic acid')}
                     </div>
                   </div>
                 </button>
@@ -201,7 +201,7 @@ export const RoutineQuizModal: React.FC = () => {
                   {t('الخطوة 2 من 3', 'Step 2 of 3')}
                 </span>
                 <h4 className="text-lg sm:text-xl font-black text-slate-900 mt-1">
-                  {t('ما هي طريقة التناول الأسهل لك يومياً؟', 'Which intake format fits your daily lifestyle?')}
+                  {t('إيه طريقة الاستخدام الأسهل والمريحة ليك في يومك؟', 'Which format fits your daily lifestyle?')}
                 </h4>
               </div>
 
@@ -215,7 +215,7 @@ export const RoutineQuizModal: React.FC = () => {
                       {t('حبيبات تذوب على اللسان مباشرة دون ماء (أكياس سريعة)', 'Fast-melting pellets on tongue (no water)')}
                     </div>
                     <div className="text-xs text-slate-500">
-                      {t('طعم توت بري لذيذ أثناء التنقل أو العمل', 'Delicious wild berry on-the-go convenience')}
+                      {t('طعم توت بري منعش وسهلة تاخدها معاك الشغل والتنقل', 'Refreshing berry flavor on-the-go convenience')}
                     </div>
                   </div>
                   <ArrowIcon size={18} className="text-slate-400 shrink-0" />
@@ -227,10 +227,10 @@ export const RoutineQuizModal: React.FC = () => {
                 >
                   <div>
                     <div className="font-bold text-sm text-slate-900">
-                      {t('أقراص أو كبسولات جيلاتينية مع وجبة الطعام الرئيسية', 'Tablets or softgels with main daily meal')}
+                      {t('أقراص أو كبسولات مع وجبة أكلك اليومية الرئيسية', 'Tablets or softgels with main daily meal')}
                     </div>
                     <div className="text-xs text-slate-500">
-                      {t('جرعة واحدة مريحة تدوم فعاليتها طوال اليوم', 'Consistent once-daily routine with water')}
+                      {t('روتين يومي بسيط ومنتظم مع كوب ماء', 'Consistent once-daily routine with water')}
                     </div>
                   </div>
                   <ArrowIcon size={18} className="text-slate-400 shrink-0" />
@@ -247,7 +247,7 @@ export const RoutineQuizModal: React.FC = () => {
                   {t('الخطوة 3 من 3', 'Step 3 of 3')}
                 </span>
                 <h4 className="text-lg sm:text-xl font-black text-slate-900 mt-1">
-                  {t('ما الذي تبحث عنه أولاً في المكمل الغذائي؟', 'What quality matters most to you?')}
+                  {t('إيه أكتر حاجة بتفرق معاك لما بتشتري مكمل؟', 'What matters most to you in a supplement?')}
                 </h4>
               </div>
 
@@ -258,10 +258,10 @@ export const RoutineQuizModal: React.FC = () => {
                 >
                   <div>
                     <div className="font-bold text-sm text-slate-900">
-                      {t('راحة تامة للمعدة وبدون أي أعراض جانبية أو طعم منفر', 'Total digestive comfort with zero nausea or bad taste')}
+                      {t('راحة المعدة وميكونش فيه أي أعراض جانبية أو طعم منفر', 'Total digestive comfort with zero nausea or bad taste')}
                     </div>
                     <div className="text-xs text-slate-500">
-                      {t('نقاء ألماني صيدلاني خالي من الشوائب', 'German pure grade eliminating side effects')}
+                      {t('نقاء ألماني صيدلي بدون إمساك وبدون شوائب', 'German pure grade eliminating side effects')}
                     </div>
                   </div>
                   <ArrowIcon size={18} className="text-slate-400 shrink-0" />
@@ -273,10 +273,10 @@ export const RoutineQuizModal: React.FC = () => {
                 >
                   <div>
                     <div className="font-bold text-sm text-slate-900">
-                      {t('أعلى تركيز حيوي ممكن معلن بالأرقام الصريحة', 'Maximum active potency explicitly stated in milligrams')}
+                      {t('تركيز عالي وأرقام حقيقية معلنة على العلبة بالمليجرام', 'Maximum active potency explicitly stated in milligrams')}
                     </div>
                     <div className="text-xs text-slate-500">
-                      {t('أرقام حقيقية معلنة على العبوة دون غموض', 'Exact figures on pack rather than vague words')}
+                      {t('أرقام حقيقية مش مجرد كلام دعاية عام', 'Exact figures on pack rather than vague marketing')}
                     </div>
                   </div>
                   <ArrowIcon size={18} className="text-slate-400 shrink-0" />
@@ -291,15 +291,15 @@ export const RoutineQuizModal: React.FC = () => {
               <div className="text-center">
                 <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-800 font-bold text-xs px-3 py-1 rounded-full mb-2">
                   <Check size={14} />
-                  <span>{t('اكتمل التشخيص الصيدلاني بنجاح', 'Diagnostic Complete')}</span>
+                  <span>{t('طلعنالك أفضل ترشيح صيدلي مناسب ليك', 'Diagnostic Complete')}</span>
                 </div>
                 <h4 className="text-xl sm:text-2xl font-black text-slate-900">
-                  {t('روتينك الألماني الموصى به من THG 4 Pharma', 'Your Recommended THG German Protocol')}
+                  {t('الروتين الألماني الأنسب ليك من THG 4 Pharma', 'Your Recommended THG German Protocol')}
                 </h4>
                 <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-md mx-auto">
                   {t(
-                    'بناءً على أهدافك الصحية، هذه هي التركيبات الألمانية الأنسب لضمان النتائج المرجوة بنقاء صيدلاني تام.',
-                    'Based on your goals, these German formulations provide the targeted nutritional synergy you need.'
+                    'بناءً على إجاباتك، دول أفضل المكملات اللي هيفرقوا معاك فعلياً بدون أي أعراض جانبية وبأعلى نقاء ألماني.',
+                    'Based on your goals, these German formulations provide the exact targeted nutritional synergy you need.'
                   )}
                 </p>
               </div>

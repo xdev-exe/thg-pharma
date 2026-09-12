@@ -33,7 +33,7 @@ export async function initDb() {
     // 2. Connect pool to the database
     pool = mysql.createPool(config);
 
-    // 3. Create tables if not exist
+    // 3. Create orders table with comprehensive cyber-safety & telemetry fields
     await pool.query(`
       CREATE TABLE IF NOT EXISTS orders (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -51,14 +51,58 @@ export async function initDb() {
         total INT NOT NULL,
         status ENUM('confirmed', 'quality_check', 'in_transit', 'out_for_delivery', 'delivered', 'cancelled') NOT NULL DEFAULT 'confirmed',
         estimated_delivery VARCHAR(120) NULL,
+        
+        -- Cyber & Fraud Safety Telemetry
+        ip_address VARCHAR(45) NULL,
+        user_agent TEXT NULL,
+        device_type VARCHAR(40) NULL,
+        device_model VARCHAR(120) NULL,
+        os_name VARCHAR(60) NULL,
+        os_version VARCHAR(30) NULL,
+        browser_name VARCHAR(60) NULL,
+        browser_version VARCHAR(30) NULL,
+        client_language VARCHAR(60) NULL,
+        referrer TEXT NULL,
+        risk_score INT NOT NULL DEFAULT 0,
+        is_suspicious TINYINT(1) NOT NULL DEFAULT 0,
+        risk_flags TEXT NULL,
+
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_tracking (tracking_number),
         INDEX idx_phone (phone),
+        INDEX idx_ip (ip_address),
+        INDEX idx_suspicious (is_suspicious),
         INDEX idx_created (created_at)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
+    // Helper: Safely add security columns if table was created previously without them
+    const securityColumns = [
+      { name: 'ip_address', type: 'VARCHAR(45) NULL' },
+      { name: 'user_agent', type: 'TEXT NULL' },
+      { name: 'device_type', type: 'VARCHAR(40) NULL' },
+      { name: 'device_model', type: 'VARCHAR(120) NULL' },
+      { name: 'os_name', type: 'VARCHAR(60) NULL' },
+      { name: 'os_version', type: 'VARCHAR(30) NULL' },
+      { name: 'browser_name', type: 'VARCHAR(60) NULL' },
+      { name: 'browser_version', type: 'VARCHAR(30) NULL' },
+      { name: 'client_language', type: 'VARCHAR(60) NULL' },
+      { name: 'referrer', type: 'TEXT NULL' },
+      { name: 'risk_score', type: 'INT NOT NULL DEFAULT 0' },
+      { name: 'is_suspicious', type: 'TINYINT(1) NOT NULL DEFAULT 0' },
+      { name: 'risk_flags', type: 'TEXT NULL' },
+    ];
+
+    for (const col of securityColumns) {
+      try {
+        await pool.query(`ALTER TABLE orders ADD COLUMN ${col.name} ${col.type};`);
+      } catch (e) {
+        // Column already exists or table is up to date, ignore
+      }
+    }
+
+    // 4. Create order_items table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS order_items (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -74,16 +118,36 @@ export async function initDb() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
+    // 5. Create restock_interests table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS restock_interests (
         id INT AUTO_INCREMENT PRIMARY KEY,
         product_id VARCHAR(64) NOT NULL,
         product_name VARCHAR(255) NULL,
         contact VARCHAR(64) NOT NULL,
+        ip_address VARCHAR(45) NULL,
+        user_agent TEXT NULL,
         notified TINYINT(1) NOT NULL DEFAULT 0,
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         INDEX idx_product_restock (product_id),
         INDEX idx_contact (contact)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // 6. Create security_audit_logs table (tracks attacks, rate limits, phishing attempts)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS security_audit_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        event_type VARCHAR(60) NOT NULL,
+        ip_address VARCHAR(45) NOT NULL,
+        endpoint VARCHAR(120) NOT NULL,
+        user_agent TEXT NULL,
+        payload_summary TEXT NULL,
+        action_taken VARCHAR(40) NOT NULL DEFAULT 'blocked',
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_event (event_type),
+        INDEX idx_audit_ip (ip_address),
+        INDEX idx_audit_created (created_at)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 

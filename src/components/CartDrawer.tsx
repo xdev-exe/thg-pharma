@@ -64,10 +64,10 @@ export const CartDrawer: React.FC = () => {
               </div>
               <div>
                 <h3 className="font-extrabold text-slate-900 text-base">
-                  {t('حقيبة المشتريات', 'Your Shopping Bag')}
+                  {t('سلة مشترياتك في THG', 'Your Shopping Bag')}
                 </h3>
                 <span className="text-xs text-slate-500 font-medium">
-                  {cartCount} {t('مكملات في الحقيبة', 'items')}
+                  {cartCount} {t('مكملات مختارة', 'items')}
                 </span>
               </div>
             </div>
@@ -85,8 +85,8 @@ export const CartDrawer: React.FC = () => {
             <Truck size={16} className="text-emerald-600 shrink-0" />
             <span>
               {t(
-                'تهانينا! طلبيتك مؤهلة للشحن المجاني السريع لكافة محافظات مصر 🎉',
-                'Great! Your order qualifies for Free Express Nationwide Shipping 🎉'
+                'طلبك مؤهل للشحن السريع المجاني لكل محافظات مصر 🎉',
+                'Your order qualifies for Free Express Nationwide Delivery 🎉'
               )}
             </span>
           </div>
@@ -100,12 +100,12 @@ export const CartDrawer: React.FC = () => {
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-800 text-base">
-                    {t('حقيبة المشتريات فارغة حالياً', 'Your bag is empty')}
+                    {t('سلتك لسه فاضية', 'Your bag is empty')}
                   </h4>
-                  <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+                  <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto leading-relaxed">
                     {t(
-                      'تصفح مجموعتنا الألمانية المختارة واكتشف المكمل المثالي لاحتياجاتك اليومية.',
-                      'Browse our German supplement collection and find the right routine for you.'
+                      'نقي المكمل الألماني اللي يناسب روتينك اليومي، وإحنا هنوصلهولك متبرد ومحمي لحد باب بيتك.',
+                      'Pick the German formula that matches your routine, and we will deliver it safely.'
                     )}
                   </p>
                 </div>
@@ -113,7 +113,7 @@ export const CartDrawer: React.FC = () => {
                   onClick={() => closeModal()}
                   className="mt-2 px-6 py-2.5 bg-[#0A1628] hover:bg-slate-800 text-white text-xs font-bold rounded-full transition-all cursor-pointer"
                 >
-                  {t('تصفح المكملات الآن', 'Explore Supplements')}
+                  {t('شوف المكملات المتاحة', 'Explore Supplements')}
                 </button>
               </div>
             ) : (
@@ -237,7 +237,7 @@ export const CartDrawer: React.FC = () => {
               {/* Security guarantee */}
               <div className="flex items-center justify-center gap-2 text-[11px] text-slate-500 font-medium">
                 <ShieldCheck size={14} className="text-emerald-600" />
-                <span>{t('دفع نقدي عند الاستلام بعد معاينة العبوة', 'Cash on Delivery after pack inspection')}</span>
+                <span>{t('معاينة العبوة ومطابقتها قبل ما تدفع أي جنيه للمندوب', 'Cash on Delivery after full pack inspection')}</span>
               </div>
 
               {/* Checkout Button */}
@@ -245,7 +245,7 @@ export const CartDrawer: React.FC = () => {
                 onClick={() => openModal('checkout')}
                 className="w-full py-4 bg-[#C8102E] hover:bg-[#9B0D24] text-white font-black text-sm rounded-2xl shadow-lg shadow-red-900/20 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
               >
-                <span>{t('إتمام الطلب الآن (الدفع عند الاستلام)', 'Proceed to Secure Checkout')}</span>
+                <span>{t('كمّل طلبك دلوقتي (الدفع عند الاستلام)', 'Proceed to Secure Checkout')}</span>
                 <ArrowIcon size={18} />
               </button>
             </div>

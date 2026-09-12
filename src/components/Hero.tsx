@@ -38,18 +38,18 @@ export const Hero: React.FC = () => {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.15]">
-              {t('الصحة الحقيقية تبدأ بـ', 'True Health Demands')}{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-400 to-[#D4A843]">
-                {t('النقاء الألماني الصيدلاني', 'Pure German Precision')}
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.18]">
+              {t('صحتك وصحة عيلتك مش تجربة..', 'Your Health Deserves Certainty:')}{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-400 to-[#D4A843] block mt-1">
+                {t('مكملات أصلية ومضمونة من ألمانيا لحد باب بيتك', 'Authentic German Formulations Directly to Your Door')}
               </span>
             </h1>
 
             {/* Sub-headline */}
             <p className="text-slate-300 text-base sm:text-lg lg:text-xl font-normal max-w-2xl mx-auto lg:mx-0 leading-relaxed">
               {t(
-                'نحن في THG (True Health Goals) نلغي الغموض من سوق المكملات في مصر: نوفر لك التركيبات الألمانية الأصلية ذات التركيزات المعلنة بالأرقام الصريحة، مع ضمان سلاسل التبريد والتخزين الصيدلاني حتى باب منزلك.',
-                'At THG (True Health Goals), we remove ambiguity from the Egyptian supplement market: bringing you certified German formulations with fully declared active potencies, preserved under strict climate-controlled pharmaceutical custody.'
+                'في THG، بنعتبرك واحد من بيتنا. مفيش عندنا علب مجهولة المصدر ولا كلام دعاية عايم؛ بنستوردلك بنفسنا أعلى المكملات الألمانية بنسب ومكونات صريحة بالأرقام، محفوظة ومبردة زي ما الكتاب بيقول، وبتفتح تفحص علبتك بنفسك وتتأكد قبل ما تدفع أي مليم.',
+                'At THG, you are family. We refuse unverified parallel goods and vague advertising. We personally import top-tier German formulations with exact declared potencies, held under strict cold-chain custody — and you inspect your parcel before paying a single pound.'
               )}
             </p>
 
@@ -57,18 +57,18 @@ export const Hero: React.FC = () => {
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <button
                 onClick={scrollToProducts}
-                className="w-full sm:w-auto bg-[#C8102E] hover:bg-[#9B0D24] text-white font-bold text-base px-8 py-4 rounded-full shadow-lg shadow-red-900/30 hover:shadow-red-900/50 transition-all flex items-center justify-center gap-3 active:scale-95 group"
+                className="w-full sm:w-auto bg-[#C8102E] hover:bg-[#9B0D24] text-white font-bold text-base px-8 py-4 rounded-full shadow-lg shadow-red-900/30 hover:shadow-red-900/50 transition-all flex items-center justify-center gap-3 active:scale-95 group cursor-pointer"
               >
-                <span>{t('تسوق المكملات المتاحة الآن', 'Shop In-Stock Formulas')}</span>
+                <span>{t('شوف المكملات المتاحة عندنا', 'Browse Available Supplements')}</span>
                 <ArrowIcon size={18} className="transition-transform group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
               </button>
 
               <button
                 onClick={() => openModal('quiz')}
-                className="w-full sm:w-auto bg-slate-800/90 hover:bg-slate-750 text-slate-100 hover:text-white border border-slate-700 font-semibold text-base px-6 py-4 rounded-full transition-all flex items-center justify-center gap-2 hover:border-[#D4A843] active:scale-95"
+                className="w-full sm:w-auto bg-slate-800/90 hover:bg-slate-750 text-slate-100 hover:text-white border border-slate-700 font-semibold text-base px-6 py-4 rounded-full transition-all flex items-center justify-center gap-2 hover:border-[#D4A843] active:scale-95 cursor-pointer"
               >
                 <Sparkles size={18} className="text-[#D4A843]" />
-                <span>{t('اختبار اختيار المكمل المناسب', 'Find Your Routine Quiz')}</span>
+                <span>{t('محتار؟ ساعدني أختار الأنسب ليا', 'Need Help Choosing?')}</span>
               </button>
             </div>
 
@@ -76,15 +76,15 @@ export const Hero: React.FC = () => {
             <div className="pt-6 grid grid-cols-3 gap-4 border-t border-slate-800/80 max-w-lg mx-auto lg:mx-0 text-center">
               <div>
                 <div className="text-2xl lg:text-3xl font-black text-white">100%</div>
-                <div className="text-xs text-slate-400 mt-0.5">{t('صيدلاني ألماني أصلي', 'Authentic German GMP')}</div>
+                <div className="text-xs text-slate-400 mt-0.5">{t('ألماني أصلي وموثق', '100% Authentic German')}</div>
               </div>
               <div>
                 <div className="text-2xl lg:text-3xl font-black text-[#D4A843]">0 ج.م</div>
                 <div className="text-xs text-slate-400 mt-0.5">{t('شحن مجاني لكل مصر', 'Free Nationwide Delivery')}</div>
               </div>
               <div>
-                <div className="text-2xl lg:text-3xl font-black text-white">27</div>
-                <div className="text-xs text-slate-400 mt-0.5">{t('محافظة مغطاة بالدفع عند الاستلام', 'Governorates with COD')}</div>
+                <div className="text-2xl lg:text-3xl font-black text-white">{t('معاينة', 'Inspect')}</div>
+                <div className="text-xs text-slate-400 mt-0.5">{t('افحص علبتك قبل الدفع', 'Check Pack Before Payment')}</div>
               </div>
             </div>
           </div>
@@ -94,7 +94,7 @@ export const Hero: React.FC = () => {
             <div className="relative mx-auto max-w-md bg-gradient-to-b from-slate-800/90 to-slate-900/90 p-6 sm:p-8 rounded-3xl border border-slate-700 shadow-2xl backdrop-blur-xl">
               {/* Highlight ribbon */}
               <div className="absolute -top-3.5 right-6 bg-gradient-to-r from-[#C8102E] to-rose-600 text-white text-xs font-black px-4 py-1 rounded-full shadow-md">
-                {t('معيار النقاء الأوروبي', 'European Purity Standard')}
+                {t('ضمان وأمان THG', 'THG Trust & Safety')}
               </div>
 
               <div className="space-y-5">
@@ -103,40 +103,40 @@ export const Hero: React.FC = () => {
                     <FlaskConical size={26} />
                   </div>
                   <div>
-                    <div className="text-xs text-slate-400">{t('فحص الشحنات المخبرية', 'Batch Lab Verification')}</div>
-                    <div className="text-base font-bold text-white">{t('شهادة استيراد رسمية لكل تشغيلة', 'Certified Lot Import Release')}</div>
+                    <div className="text-xs text-slate-400">{t('فحص صيدلاني وتبريد معتمد', 'Pharma Certified & Cold Chain')}</div>
+                    <div className="text-base font-bold text-white">{t('حقك تطمئن: علبتك من المصدر مباشرة', 'Peace of Mind: Straight from the Source')}</div>
                   </div>
                 </div>
 
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
                   {t(
-                    'نحن لا نبيع مكملات مجهولة المصدر أو مخزنة بطرق عشوائية. كل علبة تأتي مشحونة في حاويات مبردة لضمان سلامة الفيتامينات والزيوت الحساسة من حرارة الجو.',
-                    'We strictly avoid unverified parallel channels. Every pack is freighted in temperature-controlled chambers preserving delicate bio-actives from Egyptian climate exposure.'
+                    'زي ما بنقول في مصر، اللي بيشتري راحة باله كسبان. علبتك بنشحنها في تبريد صيدلي محكم علشان حرارة الجو متبوظش أي فيتامين أو أوميجا، ومندوبنا بيستناك تفتح وتتأكد بنفسك إن العلبة سليمة ومختومة.',
+                    'True peace of mind means absolute certainty. Your parcel travels in cold-chain custody so summer heat never compromises vital nutrients, and our courier waits while you inspect the sealed pack.'
                   )}
                 </p>
 
                 <div className="space-y-2.5 pt-2">
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-200">
                     <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
-                    <span>{t('تركيزات معلنة بالمليجرام الدقيق — لا غموض', 'Precise milligram declarations on every pack')}</span>
+                    <span>{t('الأرقام والتركيزات واضحة وصريحة على كل علبة', 'Clear milligram amounts declared on every box')}</span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-200">
                     <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
-                    <span>{t('معاينة العبوة ومطابقتها قبل الدفع عند الاستلام', 'Inspect pack upon arrival before cash payment')}</span>
+                    <span>{t('معاينة كاملة قبل ما تدفع أي فلوس للمندوب', 'Inspect the parcel before paying the courier')}</span>
                   </div>
                   <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-200">
                     <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
-                    <span>{t('خدمة عملاء صيدلانية متخصصة عبر واتساب', 'Specialist pharmacist support on WhatsApp')}</span>
+                    <span>{t('فريق صيادلة معاك على واتساب لأي سؤال', 'Licensed clinical team ready on WhatsApp')}</span>
                   </div>
                 </div>
 
                 <div className="pt-3">
                   <button
                     onClick={scrollToProducts}
-                    className="w-full py-3 bg-white hover:bg-slate-100 text-[#0A1628] font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-white hover:bg-slate-100 text-[#0A1628] font-bold text-xs sm:text-sm rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Award size={16} className="text-[#C8102E]" />
-                    <span>{t('تصفح الـ 6 مكملات المعتمدة', 'Browse All 6 Verified Formulas')}</span>
+                    <span>{t('تصفح مكملاتنا الـ 6 الألمانية', 'Explore Our 6 German Formulas')}</span>
                   </button>
                 </div>
               </div>

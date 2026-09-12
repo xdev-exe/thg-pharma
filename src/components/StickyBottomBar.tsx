@@ -26,7 +26,7 @@ export const StickyBottomBar: React.FC = () => {
           </div>
           <div>
             <span className="text-[10px] text-slate-500 font-bold block uppercase leading-none">
-              {t('إجمالي السلة', 'Cart Total')}
+              {t('إجمالي طلبك', 'Cart Total')}
             </span>
             <span className="text-sm font-black text-slate-900 leading-tight">
               {formatEGP(total, lang)}
@@ -39,7 +39,7 @@ export const StickyBottomBar: React.FC = () => {
           onClick={() => openModal('checkout')}
           className="flex-1 py-3 px-4 bg-[#C8102E] hover:bg-[#9B0D24] text-white font-black text-xs rounded-xl shadow-md shadow-red-900/20 flex items-center justify-center gap-1.5 active:scale-95 cursor-pointer"
         >
-          <span>{t('إتمام الطلب (الدفع عند الاستلام)', 'Checkout (COD)')}</span>
+          <span>{t('كمّل طلبك (معاينة قبل الدفع) 🚚', 'Checkout (COD Inspection) 🚚')}</span>
           <ArrowIcon size={15} />
         </button>
       </div>

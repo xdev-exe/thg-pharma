@@ -32,6 +32,22 @@ model Order {
   total             Int
   status            OrderStatus @default(confirmed)
   estimatedDelivery String?     @map("estimated_delivery") @db.VarChar(120)
+
+  // Cyber & Anti-Fraud Telemetry
+  ipAddress         String?     @map("ip_address") @db.VarChar(45)
+  userAgent         String?     @map("user_agent") @db.Text
+  deviceType        String?     @map("device_type") @db.VarChar(40)
+  deviceModel       String?     @map("device_model") @db.VarChar(120)
+  osName            String?     @map("os_name") @db.VarChar(60)
+  osVersion         String?     @map("os_version") @db.VarChar(30)
+  browserName       String?     @map("browser_name") @db.VarChar(60)
+  browserVersion    String?     @map("browser_version") @db.VarChar(30)
+  clientLanguage    String?     @map("client_language") @db.VarChar(60)
+  referrer          String?     @db.Text
+  riskScore         Int         @default(0) @map("risk_score")
+  isSuspicious      Boolean     @default(false) @map("is_suspicious")
+  riskFlags         String?     @map("risk_flags") @db.Text
+
   createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime    @updatedAt @map("updated_at")
 
@@ -39,6 +55,8 @@ model Order {
 
   @@index([trackingNumber])
   @@index([phone])
+  @@index([ipAddress])
+  @@index([isSuspicious])
   @@index([createdAt])
   @@map("orders")
 }
@@ -64,10 +82,28 @@ model RestockInterest {
   productId   String   @map("product_id") @db.VarChar(64)
   productName String?  @map("product_name") @db.VarChar(255)
   contact     String   @db.VarChar(64)
+  ipAddress   String?  @map("ip_address") @db.VarChar(45)
+  userAgent   String?  @map("user_agent") @db.Text
   notified    Boolean  @default(false)
   createdAt   DateTime @default(now()) @map("created_at")
 
   @@index([productId])
   @@index([contact])
   @@map("restock_interests")
+}
+
+model SecurityAuditLog {
+  id             Int      @id @default(autoincrement())
+  eventType      String   @map("event_type") @db.VarChar(60)
+  ipAddress      String   @map("ip_address") @db.VarChar(45)
+  endpoint       String   @db.VarChar(120)
+  userAgent      String?  @map("user_agent") @db.Text
+  payloadSummary String?  @map("payload_summary") @db.Text
+  actionTaken    String   @default("blocked") @map("action_taken") @db.VarChar(40)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([eventType])
+  @@index([ipAddress])
+  @@index([createdAt])
+  @@map("security_audit_logs")
 }

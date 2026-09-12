@@ -1,44 +1,146 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import rateLimit from 'express-rate-limit';
 import { initDb, getDb, isDbConnected } from './db.js';
+import { getClientIp, parseClientDevice, evaluateOrderRisk } from './security.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 8877;
 
-// Middleware
+// Trust reverse proxies (Nginx, Cloudflare, Vercel, Docker)
+app.set('trust proxy', 1);
+
+// Prevent excessive payload denial of service attacks
+app.use(express.json({ limit: '64kb' }));
+
+// CORS configuration
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:3000,https://thg4pharma.com')
+  .split(',')
+  .map((o) => o.trim());
+
 app.use(cors({
-  origin: '*',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, server-to-server) or in whitelist
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Permissive for preview deployments
+    }
+  },
   methods: ['GET', 'POST', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 
-app.use(express.json());
+// =========================================================================
+// Rate Limiting Policies (DDoS, Brute Force & Fraud Defense)
+// =========================================================================
+
+// 1. Global API Limiter: 150 requests per 15 minutes per IP
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 150,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many requests from this IP. Please wait a few minutes.',
+    code: 'RATE_LIMIT_EXCEEDED',
+  },
+  keyGenerator: (req) => getClientIp(req),
+});
+
+// 2. Strict Order Creation Limiter: max 8 orders per 15 minutes per IP
+// Protects against automated script flooding, inventory holding attacks & spam
+const orderCreationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many order attempts from this connection. Please try again after 15 minutes or contact our pharmacist on WhatsApp.',
+    code: 'ORDER_RATE_LIMIT_EXCEEDED',
+  },
+  keyGenerator: (req) => getClientIp(req),
+  handler: async (req, res, next, options) => {
+    const ip = getClientIp(req);
+    console.warn(`[Security Alert] Order creation rate limit exceeded by IP: ${ip}`);
+    
+    // Log to security audit log if DB connected
+    const pool = getDb();
+    if (pool && isDbConnected()) {
+      try {
+        await pool.query(
+          `INSERT INTO security_audit_logs (event_type, ip_address, endpoint, user_agent, action_taken)
+           VALUES ('RATE_LIMIT_ORDER_FLOOD', ?, '/api/orders', ?, 'blocked')`,
+          [ip, req.headers['user-agent'] || '']
+        );
+      } catch (e) {
+        // ignore
+      }
+    }
+    res.status(429).json(options.message);
+  },
+});
+
+// 3. Tracking Lookup Limiter: max 40 lookups per 15 minutes per IP
+// Protects against enumeration and phone number scraping
+const trackingLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 40,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many tracking queries. Please try again in a few minutes.',
+    code: 'TRACKING_RATE_LIMIT_EXCEEDED',
+  },
+  keyGenerator: (req) => getClientIp(req),
+});
+
+// 4. Restock Alert Limiter: max 12 requests per 15 minutes per IP
+const restockLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 12,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many requests. Please wait a moment.',
+  },
+  keyGenerator: (req) => getClientIp(req),
+});
+
+app.use(globalLimiter);
 
 // In-memory fallback if MySQL is not currently running
 const memoryOrders = [];
 const memoryRestock = [];
+const memoryAuditLogs = [];
 
 function generateTrackingNumber() {
   const digits = Math.floor(100000 + Math.random() * 900000);
   return `THG-EG-${digits}`;
 }
 
+// =========================================================================
+// API Routes
+// =========================================================================
+
 // Health check probe
 app.get(['/health', '/api/health'], (req, res) => {
+  const ip = getClientIp(req);
   res.json({
     status: 'ok',
     service: 'thg-pharma-backend',
     port: PORT,
     databaseConnected: isDbConnected(),
+    clientIp: ip,
     timestamp: new Date().toISOString(),
   });
 });
 
-// Create Order endpoint
-app.post('/api/orders', async (req, res) => {
+// Create Order endpoint with deep security telemetry
+app.post('/api/orders', orderCreationLimiter, async (req, res) => {
   try {
     const {
       customerName,
@@ -54,11 +156,29 @@ app.post('/api/orders', async (req, res) => {
       total = 0,
     } = req.body;
 
+    // 1. Basic validation
     if (!customerName || !phone || !address) {
       return res.status(400).json({
         error: 'Missing required delivery fields (customerName, phone, address)',
       });
     }
+
+    // 2. Extract client security & device telemetry
+    const ip = getClientIp(req);
+    const userAgent = req.headers['user-agent'] || '';
+    const clientLanguage = req.headers['accept-language'] || '';
+    const referrer = req.headers['referer'] || req.headers['referrer'] || '';
+    const device = parseClientDevice(userAgent);
+
+    // 3. Evaluate fraud / cyber risk score
+    const riskAssessment = evaluateOrderRisk({
+      ip,
+      phone,
+      userAgent,
+      items,
+      customerName,
+      total,
+    });
 
     const trackingNumber = generateTrackingNumber();
     const now = new Date();
@@ -73,24 +193,40 @@ app.post('/api/orders', async (req, res) => {
     const pool = getDb();
 
     if (pool && isDbConnected()) {
-      // MySQL insertion
+      // MySQL insertion with full security telemetry
       const [orderResult] = await pool.query(
         `INSERT INTO orders 
-        (tracking_number, customer_name, phone, governorate, address, notes, payment_method, subtotal, discount, shipping, total, estimated_delivery, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')`,
+        (tracking_number, customer_name, phone, governorate, address, notes, payment_method, 
+         subtotal, discount, shipping, total, estimated_delivery, status,
+         ip_address, user_agent, device_type, device_model, os_name, os_version,
+         browser_name, browser_version, client_language, referrer, risk_score, is_suspicious, risk_flags)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           trackingNumber,
-          customerName,
-          phone,
+          customerName.trim(),
+          phone.trim(),
           governorate || 'القاهرة',
-          address,
-          notes,
+          address.trim(),
+          notes.trim(),
           paymentMethod,
           subtotal,
           discount,
           shipping,
           total,
           estimatedDelivery,
+          ip,
+          userAgent,
+          device.deviceType,
+          device.deviceModel,
+          device.osName,
+          device.osVersion,
+          device.browserName,
+          device.browserVersion,
+          clientLanguage,
+          referrer,
+          riskAssessment.riskScore,
+          riskAssessment.isSuspicious ? 1 : 0,
+          JSON.stringify(riskAssessment.flags),
         ]
       );
 
@@ -114,9 +250,11 @@ app.post('/api/orders', async (req, res) => {
         );
       }
 
-      console.log(`[Order Created in MySQL] ${trackingNumber} for ${customerName} (${total} EGP)`);
+      console.log(
+        `[Order Verified] ${trackingNumber} | ${customerName} | IP: ${ip} | Device: ${device.deviceModel} (${device.osName}) | Risk: ${riskAssessment.riskScore}`
+      );
     } else {
-      // In-memory fallback
+      // In-memory fallback with full telemetry
       const savedOrder = {
         trackingNumber,
         customerName,
@@ -132,10 +270,19 @@ app.post('/api/orders', async (req, res) => {
         status: 'confirmed',
         estimatedDelivery,
         items,
+        ipAddress: ip,
+        deviceType: device.deviceType,
+        deviceModel: device.deviceModel,
+        osName: device.osName,
+        browserName: device.browserName,
+        riskScore: riskAssessment.riskScore,
+        isSuspicious: riskAssessment.isSuspicious,
         createdAt: now.toISOString(),
       };
       memoryOrders.unshift(savedOrder);
-      console.log(`[Order Created in Memory Fallback] ${trackingNumber} for ${customerName}`);
+      console.log(
+        `[Order in Memory Fallback] ${trackingNumber} | IP: ${ip} | Device: ${device.deviceModel} | Risk: ${riskAssessment.riskScore}`
+      );
     }
 
     res.status(201).json({
@@ -152,7 +299,7 @@ app.post('/api/orders', async (req, res) => {
       discount,
       shipping,
       total,
-      message: 'Order placed successfully',
+      message: 'Order placed securely',
     });
   } catch (error) {
     console.error('[Error Creating Order]:', error);
@@ -160,8 +307,8 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-// Lookup Order tracking endpoint
-app.get('/api/orders/:trackingNumber', async (req, res) => {
+// Lookup Order tracking endpoint (Rate limited)
+app.get('/api/orders/:trackingNumber', trackingLimiter, async (req, res) => {
   try {
     const query = req.params.trackingNumber.trim();
     const pool = getDb();
@@ -169,7 +316,9 @@ app.get('/api/orders/:trackingNumber', async (req, res) => {
     if (pool && isDbConnected()) {
       // Query MySQL
       const [rows] = await pool.query(
-        `SELECT * FROM orders 
+        `SELECT id, tracking_number, customer_name, phone, governorate, address, notes, 
+                payment_method, subtotal, discount, shipping, total, status, estimated_delivery, created_at
+         FROM orders 
          WHERE UPPER(tracking_number) = UPPER(?) 
             OR phone = ? 
             OR phone = ?
@@ -245,8 +394,8 @@ app.get('/api/orders/:trackingNumber', async (req, res) => {
   }
 });
 
-// Restock Interest endpoint
-app.post('/api/restock-interest', async (req, res) => {
+// Restock Interest endpoint with telemetry
+app.post('/api/restock-interest', restockLimiter, async (req, res) => {
   try {
     const { productId, productName = '', contact } = req.body;
 
@@ -254,17 +403,20 @@ app.post('/api/restock-interest', async (req, res) => {
       return res.status(400).json({ error: 'Missing productId or contact' });
     }
 
+    const ip = getClientIp(req);
+    const userAgent = req.headers['user-agent'] || '';
+
     const pool = getDb();
     if (pool && isDbConnected()) {
       await pool.query(
-        `INSERT INTO restock_interests (product_id, product_name, contact) VALUES (?, ?, ?)`,
-        [productId, productName, contact]
+        `INSERT INTO restock_interests (product_id, product_name, contact, ip_address, user_agent) VALUES (?, ?, ?, ?, ?)`,
+        [productId, productName, contact, ip, userAgent]
       );
     } else {
-      memoryRestock.push({ productId, productName, contact, createdAt: new Date() });
+      memoryRestock.push({ productId, productName, contact, ip, userAgent, createdAt: new Date() });
     }
 
-    console.log(`[Restock Registered] for product ${productId} -> ${contact}`);
+    console.log(`[Restock Registered] product: ${productId} -> ${contact} (IP: ${ip})`);
     res.json({ success: true, message: 'Restock interest registered' });
   } catch (error) {
     console.error('[Error in Restock Interest]:', error);
@@ -279,8 +431,9 @@ async function startServer() {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`====================================================`);
     console.log(`  THG 4 Pharma Backend Server running on port ${PORT}`);
-    console.log(`  API URL: http://localhost:${PORT}/api/orders`);
-    console.log(`  Health:  http://localhost:${PORT}/api/health`);
+    console.log(`  Cyber Protection: Active (IP Telemetry & Rate Limiting)`);
+    console.log(`  API Endpoint:     http://localhost:${PORT}/api/orders`);
+    console.log(`  Health Probe:     http://localhost:${PORT}/api/health`);
     console.log(`====================================================`);
   });
 }

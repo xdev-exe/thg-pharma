@@ -127,13 +127,13 @@ export const CheckoutModal: React.FC = () => {
             <div>
               <h3 className="text-base sm:text-lg font-black leading-tight">
                 {orderCompleted
-                  ? t('تم تأكيد طلبك بنجاح 🎉', 'Order Confirmed Successfully 🎉')
-                  : t('إتمام الطلب — شحن مجاني لكافة محافظات مصر', 'Checkout — Free Nationwide Express')}
+                  ? t('ألف مبروك! طلبك اتأكد وبقى في أيدي أمينة 🎉', 'Order Confirmed Successfully 🎉')
+                  : t('خطوة بسيطة وطلبك يوصلك لحد باب بيتك 🚚', 'Checkout — Free Nationwide Express')}
               </h3>
               <p className="text-xs text-slate-300">
                 {orderCompleted
-                  ? t('سيتواصل معك مندوب THG 4 Pharma لتأكيد موعد التسليم', 'THG dispatch will contact you shortly to arrange delivery')
-                  : t('الدفع نقداً أو بالفيزا عند الاستلام بعد فحص العبوة', 'Cash or Card on Delivery upon inspecting your parcel')}
+                  ? t('مندوب THG 4 Pharma هيتواصل معاك تليفونياً لترتيب وقت التسليم اللي يناسبك', 'THG dispatch will call you shortly to arrange delivery at your convenience')
+                  : t('شحن مجاني لكل محافظات مصر • الدفع عند الاستلام بعد ما تفتح وتطمن', 'Free shipping across Egypt • Pay upon inspecting your sealed box')}
               </p>
             </div>
           </div>
@@ -157,12 +157,12 @@ export const CheckoutModal: React.FC = () => {
 
               <div>
                 <h4 className="text-xl sm:text-2xl font-black text-slate-900">
-                  {t('شكراً لثقتكم في THG 4 Pharma', 'Thank You for Choosing THG 4 Pharma')}
+                  {t('شكراً لثقتك في عيلة THG 4 Pharma ❤️', 'Thank You for Trusting THG 4 Pharma')}
                 </h4>
-                <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-md mx-auto leading-relaxed">
+                <p className="text-xs sm:text-sm text-slate-600 mt-1.5 max-w-md mx-auto leading-relaxed">
                   {t(
-                    'تم تسجيل طلبيتك بنجاح وجارٍ تجهيزها في مستودعاتنا المبردة للتسليم بأعلى معايير الجودة الصيدلانية.',
-                    'Your order has been verified and is being prepared in our climate-controlled custody under European pharmaceutical standards.'
+                    'طلبك اتسجل وبنجهزهولك حالياً من مستودعات التبريد الصيدلي بكل عناية. مندوب الشحن هيكلمك قبل ما يوصلك علشان يرتب معاك الميعاد اللي يريحك.',
+                    'Your order is safely registered and being prepared with care in our pharmaceutical cold custody. Our courier will call you before arrival.'
                   )}
                 </p>
               </div>
@@ -170,7 +170,7 @@ export const CheckoutModal: React.FC = () => {
               {/* Tracking Code Box */}
               <div className="bg-slate-50 border-2 border-dashed border-slate-300 p-4 rounded-2xl max-w-sm mx-auto space-y-2">
                 <div className="text-[11px] font-bold text-slate-500 uppercase">
-                  {t('رقم تتبع الشحنة الخاص بك', 'Your Tracking Reference')}
+                  {t('رقم تتبع شحنتك الخاص', 'Your Tracking Reference')}
                 </div>
                 <div className="flex items-center justify-center gap-2">
                   <span className="text-xl sm:text-2xl font-black tracking-wider text-[#C8102E]">
@@ -186,7 +186,7 @@ export const CheckoutModal: React.FC = () => {
                 </div>
                 {copiedTracking && (
                   <span className="text-xs text-emerald-600 font-bold block animate-fade-in">
-                    {t('تم نسخ الرقم!', 'Copied to clipboard!')}
+                    {t('تم نسخ الرقم بنجاح!', 'Copied to clipboard!')}
                   </span>
                 )}
               </div>
@@ -195,11 +195,11 @@ export const CheckoutModal: React.FC = () => {
               <div className="bg-blue-50 border border-blue-200 p-3.5 rounded-2xl max-w-md mx-auto text-xs text-blue-900 space-y-1">
                 <div className="font-bold flex items-center justify-center gap-1.5">
                   <Truck size={16} className="text-blue-700" />
-                  <span>{t('الموعد المتوقع للتسليم:', 'Estimated Delivery Window:')}</span>
+                  <span>{t('الميعاد المتوقع لوصول المندوب:', 'Estimated Delivery Window:')}</span>
                 </div>
                 <div>{orderCompleted.estimatedDelivery}</div>
                 <div className="text-blue-700 font-medium pt-1 border-t border-blue-200/60">
-                  {t('المبلغ المطلوب عند الاستلام:', 'Total Due at Delivery:')}{' '}
+                  {t('المطلوب سداده للمندوب عند الاستلام:', 'Total Due at Delivery:')}{' '}
                   <span className="font-extrabold text-sm">{formatEGP(orderCompleted.total, lang)}</span>
                 </div>
               </div>
@@ -213,13 +213,13 @@ export const CheckoutModal: React.FC = () => {
                   }}
                   className="w-full sm:w-auto px-6 py-3 bg-[#0A1628] hover:bg-slate-800 text-white font-bold text-xs rounded-full transition-all cursor-pointer"
                 >
-                  {t('تتبع حالة الشحنة الآن', 'Track Delivery Progress')}
+                  {t('تتبع شحنتك من هنا', 'Track Delivery Progress')}
                 </button>
                 <button
                   onClick={closeModal}
                   className="w-full sm:w-auto px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-full transition-all cursor-pointer"
                 >
-                  {t('العودة إلى المتجر', 'Back to Store')}
+                  {t('ارجع للمتجر', 'Back to Store')}
                 </button>
               </div>
             </div>
@@ -236,13 +236,13 @@ export const CheckoutModal: React.FC = () => {
               {/* Customer Info */}
               <div className="space-y-4">
                 <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
-                  {t('بيانات المستلم وعنوان التوصيل بمصر', 'Delivery Information (Egypt)')}
+                  {t('بيانات التوصيل (مصر)', 'Delivery Details (Egypt)')}
                 </h4>
 
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {t('الاسم بالكامل *', 'Full Name *')}
+                      {t('الاسم بالكامل (عشان المندوب يعرفك) *', 'Full Name *')}
                     </label>
                     <input
                       type="text"
@@ -256,7 +256,7 @@ export const CheckoutModal: React.FC = () => {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {t('رقم الهاتف المحمول (مصري) *', 'Mobile Number (Egypt) *')}
+                      {t('رقم الموبايل (للتواصل والتنسيق) *', 'Mobile Number (Egypt) *')}
                     </label>
                     <input
                       type="tel"
@@ -272,7 +272,7 @@ export const CheckoutModal: React.FC = () => {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {t('المحافظة (شحن مجاني) *', 'Governorate (Free Shipping) *')}
+                      {t('المحافظة (شحن مجاني لكل مصر) *', 'Governorate (Free Shipping) *')}
                     </label>
                     <select
                       value={formData.governorate}
@@ -289,7 +289,7 @@ export const CheckoutModal: React.FC = () => {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {t('مدة التوصيل المتوقعة', 'Estimated Transit Time')}
+                      {t('الميعاد المتوقع لوصول الطلب', 'Estimated Delivery')}
                     </label>
                     <div className="w-full bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-700 font-bold flex items-center gap-1.5">
                       <Truck size={14} className="text-[#C8102E]" />
@@ -300,27 +300,27 @@ export const CheckoutModal: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {t('العنوان التفصيلي (المنطقة، اسم الشارع، رقم المبنى والشقة) *', 'Detailed Address (Area, Street, Building & Apt) *')}
+                    {t('العنوان بالتفصيل (المنطقة، الشارع، رقم العمارة والشقة) *', 'Detailed Address (Area, Street, Building & Apt) *')}
                   </label>
                   <input
                     type="text"
                     required
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    placeholder={t('مثال: المعادي الجديدة، شارع النصر، برج 14، الدور الخامس', 'e.g. New Maadi, El-Nasr St, Building 14')}
+                    placeholder={t('مثال: المعادي، شارع النصر، عمارة 14، الدور الثالث شقة 5', 'e.g. Maadi, El-Nasr St, Building 14')}
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#C8102E] text-slate-900"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {t('ملاحظات خاصة بمندوب الشحن (اختياري)', 'Special Delivery Notes (Optional)')}
+                    {t('أي ملاحظة تحب تقولها لمندوب الشحن؟ (اختياري)', 'Notes for courier (Optional)')}
                   </label>
                   <input
                     type="text"
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder={t('مثال: الاتصال قبل الوصول بساعة', 'e.g. Call 1 hour prior to delivery')}
+                    placeholder={t('مثال: رن عليا قبل ما توصل بساعة', 'e.g. Please call 1 hour before arrival')}
                     className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#C8102E] text-slate-900"
                   />
                 </div>
@@ -329,7 +329,7 @@ export const CheckoutModal: React.FC = () => {
               {/* Payment Method Selector */}
               <div className="space-y-3 pt-2 border-t border-slate-200">
                 <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
-                  {t('طريقة الدفع عند الاستلام', 'Payment Method')}
+                  {t('طريقة الدفع اللي تريحك عند الاستلام', 'Payment Method')}
                 </h4>
 
                 <div className="grid sm:grid-cols-2 gap-3">
@@ -350,10 +350,10 @@ export const CheckoutModal: React.FC = () => {
                     />
                     <div>
                       <div className="font-black text-xs sm:text-sm text-slate-900">
-                        {t('الدفع نقداً عند الاستلام (COD)', 'Cash on Delivery (COD)')}
+                        {t('كاش عند الاستلام (COD)', 'Cash on Delivery (COD)')}
                       </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">
-                        {t('عاين العبوة الألمانية وتأكد من سلامتها ثم ادفع للمندوب', 'Inspect the German pack upon arrival before payment')}
+                      <div className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                        {t('افتح علبتك الألمانية واتأكد بنفسك إنها سليمة ومختومة، وبعدها ادفع براحتك', 'Inspect your sealed German pack before paying')}
                       </div>
                     </div>
                   </label>
@@ -375,10 +375,10 @@ export const CheckoutModal: React.FC = () => {
                     />
                     <div>
                       <div className="font-black text-xs sm:text-sm text-slate-900">
-                        {t('الدفع بالبطاقة مع المندوب (POS)', 'Card on Delivery (POS)')}
+                        {t('كارت مع المندوب (POS)', 'Card on Delivery (POS)')}
                       </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">
-                        {t('يدعم ماكينة نقاط البيع المحمولة مع مندوب الشحن', 'Driver carries mobile card POS terminal')}
+                      <div className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                        {t('المندوب معاه ماكينة دفع إلكتروني تقدر تدفع بيها بالفيزا أو ميزة', 'Courier carries a mobile POS terminal for card payments')}
                       </div>
                     </div>
                   </label>
@@ -388,7 +388,7 @@ export const CheckoutModal: React.FC = () => {
               {/* Order Summary Strip */}
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 text-xs">
                 <div className="font-bold text-slate-900 mb-1 flex items-center justify-between">
-                  <span>{t('ملخص المنتجات المطلوبة', 'Order Summary')}</span>
+                  <span>{t('ملخص طلبك', 'Order Summary')}</span>
                   <span>({cart.length} {t('مكملات', 'items')})</span>
                 </div>
                 <div className="flex justify-between text-slate-600">
@@ -402,11 +402,11 @@ export const CheckoutModal: React.FC = () => {
                   </div>
                 )}
                 <div className="flex justify-between text-emerald-700 font-bold">
-                  <span>{t('الشحن السريع (كافة أنحاء مصر)', 'Nationwide Shipping')}</span>
-                  <span>{t('مجاني (0 ج.م)', 'FREE')}</span>
+                  <span>{t('مصاريف الشحن والتوصيل', 'Shipping')}</span>
+                  <span>{t('مجاني بالكامل (0 ج.م)', 'FREE (0 EGP)')}</span>
                 </div>
                 <div className="pt-2 border-t border-slate-200 flex justify-between text-sm sm:text-base font-black text-slate-900">
-                  <span>{t('المبلغ النهائي المطلوب دفعه', 'Total Due')}</span>
+                  <span>{t('المبلغ النهائي المطلوب دفعه عند الاستلام', 'Total Due at Delivery')}</span>
                   <span className="text-[#C8102E]">{formatEGP(total, lang)}</span>
                 </div>
               </div>
@@ -420,12 +420,12 @@ export const CheckoutModal: React.FC = () => {
                 {isSubmitting ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
-                    <span>{t('جارٍ تأكيد الطلب وحجز الشحنة...', 'Processing Order & Reserving Pack...')}</span>
+                    <span>{t('بنجهز ونأكد طلبك حالا...', 'Confirming Order & Reserving Pack...')}</span>
                   </>
                 ) : (
                   <>
                     <ShieldCheck size={18} />
-                    <span>{t(`تأكيد الطلب الآن (${formatEGP(total, lang)})`, `Confirm Order Now (${formatEGP(total, lang)})`)}</span>
+                    <span>{t(`أكّد طلبي دلوقتي (${formatEGP(total, lang)})`, `Confirm Order Now (${formatEGP(total, lang)})`)}</span>
                   </>
                 )}
               </button>

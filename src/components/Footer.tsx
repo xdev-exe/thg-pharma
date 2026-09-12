@@ -20,20 +20,20 @@ export const Footer: React.FC = () => {
             <Logo size="md" variant="light" />
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-sm">
               {t(
-                'شركة THG (True Health Goals 4 Pharma) — المستورد المعتمد للمكملات الغذائية الألمانية في مصر. نوفر المنتجات الصيدلانية بأعلى درجات النقاء وسلاسل التخزين المبرد.',
-                'THG (True Health Goals 4 Pharma) — Certified importer of German premium wellness supplements in Egypt with direct pharmaceutical custody and cold-chain integrity.'
+                'شركة THG 4 Pharma (True Health Goals) — بنعتبرك في بيتك، وبنختارلك أنضف مكملات ألمانية بأعلى معايير أمان وتخزين صيدلي سليم، لحد باب بيتك في أي مكان بمصر.',
+                'THG 4 Pharma (True Health Goals) — Treating you like family, bringing you verified German supplements held to the highest European cold-chain pharmaceutical standards.'
               )}
             </p>
             <div className="pt-2 flex items-center gap-2 text-xs text-[#D4A843] font-bold">
               <ShieldCheck size={16} />
-              <span>{t('مرخص ومطابق لمعايير الجودة الصيدلانية الأوروبية', 'Certified Pharma Importation Standards')}</span>
+              <span>{t('مستورد صيدلاني معتمد • ضمان المعاينة قبل الدفع', 'Certified Pharma Importer • Inspection Guarantee')}</span>
             </div>
           </div>
 
           {/* Quick Links */}
           <div className="lg:col-span-3 space-y-3">
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">
-              {t('روابط سريعة', 'Quick Navigation')}
+              {t('روابط تهمك', 'Quick Navigation')}
             </h4>
             <ul className="space-y-2 text-xs text-slate-300">
               <li>
@@ -46,7 +46,7 @@ export const Footer: React.FC = () => {
                   onClick={() => openModal('quiz')}
                   className="hover:text-white transition-colors cursor-pointer text-start"
                 >
-                  {t('اختبار اختيار الروتين الصحي', 'Find Your Routine Quiz')}
+                  {t('محتار؟ نساعدك تختار الأنسب', 'Find Your Routine Quiz')}
                 </button>
               </li>
               <li>
@@ -54,12 +54,12 @@ export const Footer: React.FC = () => {
                   onClick={() => openModal('tracking')}
                   className="hover:text-white transition-colors cursor-pointer text-start"
                 >
-                  {t('تتبع حالة شحنتك', 'Track Delivery Progress')}
+                  {t('شحنتك فين؟ تتبع طلبك', 'Track Delivery Progress')}
                 </button>
               </li>
               <li>
                 <a href="#heritage" className="hover:text-white transition-colors">
-                  {t('عن شركة THG 4 Pharma', 'About THG Standards')}
+                  {t('حكايتنا ومعايير THG', 'About THG Standards')}
                 </a>
               </li>
             </ul>
@@ -68,20 +68,20 @@ export const Footer: React.FC = () => {
           {/* Customer Service & Delivery Coverage */}
           <div className="lg:col-span-5 space-y-4">
             <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">
-              {t('خدمة العملاء والشحن السريع', 'Client Care & Coverage')}
+              {t('خدمة العملاء والتوصيل في مصر', 'Client Care & Coverage')}
             </h4>
             <div className="space-y-2.5 text-xs text-slate-300">
               <div className="flex items-center gap-2">
                 <Truck size={16} className="text-[#C8102E] shrink-0" />
-                <span>{t('شحن مجاني لكافة الـ 27 محافظة في جمهورية مصر العربية', 'Free nationwide shipping to all 27 Egyptian governorates')}</span>
+                <span>{t('شحن مجاني لكل محافظات مصر الـ 27 مع المعاينة قبل الدفع', 'Free nationwide shipping to all 27 governorates with COD inspection')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <PhoneCall size={16} className="text-[#D4A843] shrink-0" />
-                <span>{t('الخط الساخن وواتساب: 01210527717 (مصر)', 'Hotline & WhatsApp: +20 121 052 7717')}</span>
+                <span>{t('واتساب وخدمة العملاء: 01210527717 (متاحين دايماً نرد عليك)', 'WhatsApp Hotline: +20 121 052 7717 (Always here to help)')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin size={16} className="text-blue-400 shrink-0" />
-                <span>{t('المقر: القاهرة، مصر — مستودعات التبريد الدوائي المعتمدة', 'Cairo, Egypt — Certified Cold-Chain Logistics Hub')}</span>
+                <span>{t('المقر والمستودعات: القاهرة، مصر • مستودعات التبريد الصيدلي', 'Cairo, Egypt • Certified Cold-Chain Logistics Hub')}</span>
               </div>
             </div>
           </div>
@@ -91,8 +91,8 @@ export const Footer: React.FC = () => {
         <div className="mt-12 pt-8 border-t border-slate-800 text-[11px] text-slate-400 leading-relaxed bg-slate-900/40 p-4 rounded-2xl border">
           <p>
             {t(
-              'تنويه قانوني وصيدلاني: المكملات الغذائية المعروضة ليست بديلاً عن نظام غذائي متوازن ومتنوع أو نمط حياة صحي. هذه المنتجات ليست أدوية لعلاج أو تشخيص أو منع الأمراض بشكل منفصل دون استشارة الطبيب المختص. في حال الحمل، الرضاعة، أو تناول أدوية مزمنة، يُنصح دائماً بمراجعة الطبيب المعالج أو الصيدلي.',
-              'Regulatory & Medical Notice: The dietary supplements presented are not substitutes for a diverse, balanced diet or a healthy lifestyle. These products are not intended to diagnose, treat, cure, or prevent specific diseases without physician supervision. If pregnant, nursing, or taking prescription drugs, consult your physician or clinical pharmacist.'
+              'تنويه صيدلاني أمين: المكملات الغذائية المعروضة بتساعدك تدعم صحتك ونشاطك اليومي، لكنها مش بديل عن الأكل الصحي المتنوع أو العلاج الطبي الموصوف من طبيبك. لو بتعاني من أي حالة صحية أو حامل أو بتاخدي أدوية تانية، فريقنا أو طبيبك المعالج يقدّر يساعدك تتأكد من ملاءمة التركيبة لحالتك.',
+              'Clinical Note: The dietary supplements presented support your daily vitality and nutrition, but do not replace a varied balanced diet or prescribed medical therapies. If pregnant, nursing, or managing chronic health conditions, consult your physician or our pharmacist.'
             )}
           </p>
         </div>

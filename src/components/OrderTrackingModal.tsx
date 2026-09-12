@@ -53,34 +53,34 @@ export const OrderTrackingModal: React.FC = () => {
   const steps = [
     {
       id: 'confirmed',
-      title_ar: 'تم تأكيد الطلب',
+      title_ar: 'طلبك اتأكد وبقى في أيدي أمينة',
       title_en: 'Order Confirmed',
-      desc_ar: 'تم التحقق من بياناتك وتسجيل الطلب',
+      desc_ar: 'راجعنا بياناتك وحجزنالك العلبة الأصلية من المخزن',
       desc_en: 'Details verified and registered in system',
       done: true,
     },
     {
       id: 'packed',
-      title_ar: 'التجهيز الصيدلاني المبرد',
+      title_ar: 'التجهيز والتغليف المبرد',
       title_en: 'Cold-Chain Pharma Prep',
-      desc_ar: 'تجهيز العبوات من المستودع المبرد تحت 25° م',
+      desc_ar: 'بنجهز طلبك من مستودع التبريد الصيدلي تحت 25° م',
       desc_en: 'Packaged from climate-controlled warehouse',
       done: true,
     },
     {
       id: 'transit',
-      title_ar: 'في الطريق مع مندوب الشحن',
-      title_en: 'In Transit with Dispatch',
-      desc_ar: 'الشحنة مع شركة الشحن السريع في محافظتك',
-      desc_en: 'Handed over to courier in your governorate',
+      title_ar: 'في السكة مع مندوب الشحن',
+      title_en: 'In Transit with Courier',
+      desc_ar: 'الشحنة حالياً مع شركة الشحن السريع في طريقها لمحافظتك',
+      desc_en: 'Handed over to express courier in your area',
       done: order ? order.status !== 'confirmed' : false,
     },
     {
       id: 'delivered',
-      title_ar: 'التسليم والمعاينة',
+      title_ar: 'وصلت.. افتح وعاين وادفع براحتك',
       title_en: 'Delivered & Inspected',
-      desc_ar: 'تسليم العبوة والدفع عند الاستلام',
-      desc_en: 'Final handover and payment upon inspection',
+      desc_ar: 'المندوب هيستناك تفحص علبتك وتتأكد منها وتسدد قيمتها',
+      desc_en: 'Final handover and payment upon pack inspection',
       done: order ? order.status === 'delivered' : false,
     },
   ];
@@ -99,10 +99,10 @@ export const OrderTrackingModal: React.FC = () => {
             </div>
             <div>
               <h3 className="text-base sm:text-lg font-black leading-tight">
-                {t('تتبع شحنة THG 4 Pharma', 'Track THG 4 Pharma Delivery')}
+                {t('شحنتك فين دلوقتي؟ تتبع طلبك في ثواني', 'Track THG 4 Pharma Delivery')}
               </h3>
               <p className="text-xs text-slate-300">
-                {t('أدخل رقم التتبع (مثال: THG-EG-123456) أو رقم هاتفك المحمول', 'Enter tracking reference or your mobile number')}
+                {t('اكتب رقم تتبع شحنتك (زي THG-EG-XXXXXX) أو رقم الموبايل اللي سجلت بيه', 'Enter tracking code or your mobile number')}
               </p>
             </div>
           </div>
@@ -126,7 +126,7 @@ export const OrderTrackingModal: React.FC = () => {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder={t('رقم التتبع (THG-EG-...) أو رقم الهاتف', 'Tracking number or phone number')}
+                  placeholder={t('اكتب رقم التتبع أو رقم موبايلك هنا...', 'Enter tracking code or mobile number...')}
                   className="w-full bg-slate-50 border border-slate-300 rounded-2xl pr-10 rtl:pr-10 rtl:pl-3 ltr:pl-10 ltr:pr-3 py-3 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#C8102E]"
                 />
               </div>
@@ -135,7 +135,7 @@ export const OrderTrackingModal: React.FC = () => {
                 disabled={loading}
                 className="px-6 py-3 bg-[#C8102E] hover:bg-[#9B0D24] text-white font-bold text-xs sm:text-sm rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
               >
-                {loading ? <Loader2 size={16} className="animate-spin" /> : <span>{t('تتبع', 'Track')}</span>}
+                {loading ? <Loader2 size={16} className="animate-spin" /> : <span>{t('تتبع الشحنة', 'Track')}</span>}
               </button>
             </div>
           </form>
@@ -163,7 +163,7 @@ export const OrderTrackingModal: React.FC = () => {
                 <div className="text-right rtl:text-left">
                   <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full inline-flex items-center gap-1">
                     <CheckCircle2 size={13} />
-                    <span>{t('قيد التوصيل السريع', 'Express In Transit')}</span>
+                    <span>{t('الشحنة في طريقها إليك', 'Express In Transit')}</span>
                   </span>
                 </div>
               </div>
@@ -171,7 +171,7 @@ export const OrderTrackingModal: React.FC = () => {
               {/* Delivery Timeline */}
               <div className="space-y-4">
                 <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
-                  {t('مراحل تحرك الشحنة الصيدلانية', 'Pharmaceutical Transit Milestones')}
+                  {t('خطوات توصيل شحنتك المبردة', 'Transit Milestones')}
                 </h4>
 
                 <div className="relative border-r-2 rtl:border-r-2 rtl:border-l-0 ltr:border-l-2 ltr:border-r-0 border-slate-200 space-y-6 mr-3 rtl:mr-3 rtl:ml-0 ltr:ml-3 ltr:mr-0 pr-6 rtl:pr-6 rtl:pl-0 ltr:pl-6 ltr:pr-0">
@@ -210,7 +210,7 @@ export const OrderTrackingModal: React.FC = () => {
                   <span className="font-bold text-slate-900">{order.governorate}</span>
                 </div>
                 <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                  <span className="text-slate-500">{t('الموعد المتوقع للتسليم:', 'Estimated Window:')}</span>
+                  <span className="text-slate-500">{t('الميعاد المتوقع لوصول المندوب:', 'Estimated Window:')}</span>
                   <span className="font-bold text-emerald-700">{order.estimatedDelivery}</span>
                 </div>
                 <div className="flex items-center justify-between pt-1">
@@ -223,15 +223,15 @@ export const OrderTrackingModal: React.FC = () => {
               <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 text-blue-900">
                   <PhoneCall size={16} className="text-[#C8102E]" />
-                  <span>{t('هل تحتاج إلى تعديل موعد الاستلام أو العنوان؟', 'Need to change delivery time or address?')}</span>
+                  <span>{t('محتاج تغير الميعاد أو تعدل العنوان؟', 'Need to change delivery time or address?')}</span>
                 </div>
                 <a
-                  href={`https://wa.me/201210527717?text=${encodeURIComponent(`مرحباً THG 4 Pharma، استفسار بخصوص شحنتي رقم ${order.trackingNumber}`)}`}
+                  href={`https://wa.me/201210527717?text=${encodeURIComponent(`أهلاً THG 4 Pharma، حابب أستفسر بخصوص شحنتي رقم ${order.trackingNumber}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-1.5 bg-[#0A1628] text-white font-bold rounded-lg hover:bg-slate-800 transition-colors"
                 >
-                  {t('واتساب المندوب', 'WhatsApp')}
+                  {t('كلمنا واتساب', 'Chat on WhatsApp')}
                 </a>
               </div>
             </div>
@@ -243,8 +243,8 @@ export const OrderTrackingModal: React.FC = () => {
               <PackageCheck size={36} className="mx-auto text-slate-300" />
               <p className="text-xs leading-relaxed max-w-sm mx-auto">
                 {t(
-                  'يتم تحديث مسار الشحنات بشكل فوري بمجرد خروجها من مستودعات التبريد الصيدلانية لشركة THG 4 Pharma.',
-                  'Live tracking coordinates update continuously upon climate-controlled dispatch from THG warehouses.'
+                  'أول ما شحنتك بتتحرك من مستودعات التبريد الصيدلي لـ THG في القاهرة، بيانات التتبع بتتحدث تلقائياً والمندوب بيتواصل معاك يرتب ميعاد وصوله.',
+                  'Live tracking updates immediately once dispatched from THG temperature-controlled hub.'
                 )}
               </p>
             </div>

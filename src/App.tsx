@@ -38,15 +38,15 @@ export const App: React.FC = () => {
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <div className="inline-flex items-center gap-1.5 bg-red-50 text-[#C8102E] border border-red-200/80 px-3.5 py-1 rounded-full text-xs font-black">
               <Sparkles size={14} />
-              <span>{t('التشكيلة الصيدلانية المعتمدة في مصر', 'Certified German Formulations in Egypt')}</span>
+              <span>{t('مختارات THG 4 Pharma بعناية', 'Handpicked THG 4 Pharma Selections')}</span>
             </div>
             <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              {t('مكملات ألمانية بتركيزات صريحة ومعلنة', 'German Supplements with Declared Potencies')}
+              {t('مكملات بنقف وراها ونضمنها.. لأن صحتك أمانة', 'Formulas We Stand Behind — Your Health is Our Trust')}
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               {t(
-                'اختر مكمّلك من تشكيلة THG 4 Pharma الأصلية. جميع المنتجات مشحونة ومخزنة تحت درجات حرارة صيدلانية مبردة لحماية جودة وفاعلية العناصر الغذائية.',
-                'Select from THG 4 Pharma certified imports. Every pack is cold-chain freighted and warehoused below 25°C to preserve bio-potency.'
+                'كل علبة هنا وراها تصنيع ألماني صيدلاني دقيق ونسب واضحة بالأرقام. مشحونة في تبريد صيدلي سليم، وبنوصلها لحد باب بيتك في أي مكان بمصر مع الشحن المجاني والمعاينة قبل الدفع.',
+                'Every pack here reflects meticulous German pharmaceutical craft with explicitly declared active potencies. Delivered in cold-chain custody across Egypt with free shipping and payment after inspection.'
               )}
             </p>
           </div>
@@ -61,10 +61,10 @@ export const App: React.FC = () => {
                 <Info size={30} />
               </div>
               <h3 className="font-bold text-slate-800 text-base">
-                {t('لم نجد مكملات تطابق بحثك', 'No matching supplements found')}
+                {t('ملقناش مكملات بالاسم ده', 'No matching supplements found')}
               </h3>
               <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                {t('جرب البحث بكلمات أخرى أو اختر فئة مختلفة من القائمة أعلاه.', 'Try searching with different terms or select another category.')}
+                {t('جرب تكتب اسم العنصر زي (أوميجا، كولاجين، حديد) أو اختار من الأقسام اللي فوق.', 'Try searching for an ingredient like (omega, collagen, iron) or pick from the categories above.')}
               </p>
             </div>
           ) : (
@@ -83,12 +83,12 @@ export const App: React.FC = () => {
               </div>
               <div>
                 <span className="font-bold text-slate-900 block text-sm">
-                  {t('ضمان الاستيراد والمعاينة قبل الدفع', 'Genuine Importation & Inspection Guarantee')}
+                  {t('حقك تعاين وتطمن بنفسك قبل ما تدفع أي جنيه', 'Inspect Your Pack Before Paying')}
                 </span>
                 <span className="text-slate-500">
                   {t(
-                    'يحق لك فتح الشحنة ومطابقة العبوة قبل دفع أي مبلغ لمندوب التوصيل.',
-                    'You are fully entitled to inspect the sealed pack prior to handing payment to the courier.'
+                    'المندوب بيستناك تفتح العلبة وتتأكد إنها أصلية وسليمة ومطابقة لطلبك قبل ما تدفع.',
+                    'The courier waits while you inspect the sealed authentic box before handing over payment.'
                   )}
                 </span>
               </div>
@@ -99,7 +99,7 @@ export const App: React.FC = () => {
               rel="noopener noreferrer"
               className="shrink-0 px-5 py-2.5 bg-[#0A1628] hover:bg-slate-800 text-white font-bold rounded-xl transition-all"
             >
-              {t('تواصل مع صيدلي THG', 'Consult Pharmacist')}
+              {t('صيدلي THG معاك على واتساب', 'Chat with THG Pharmacist')}
             </a>
           </div>
         </section>
