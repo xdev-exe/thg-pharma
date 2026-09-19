@@ -63,13 +63,13 @@ export const Header: React.FC = () => {
             </div>
             <span>•</span>
             <a
-              href="https://wa.me/201210527717"
+              href="https://wa.me/201220722034"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 hover:text-white transition-colors"
             >
               <PhoneCall size={12} className="text-emerald-400" />
-              <span>{t('كلمنا واتساب: 01210527717', 'WhatsApp: 01210527717')}</span>
+              <span>{t('كلمنا واتساب: 01220722034', 'WhatsApp: 01220722034')}</span>
             </a>
           </div>
         </div>

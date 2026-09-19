@@ -10,7 +10,7 @@ export const WhatsAppButton: React.FC = () => {
       ? 'أهلاً THG 4 Pharma، كنت حابب أستفسر من الصيدلي عن المكملات الألمانية الأنسب ليا وتفاصيل التوصيل.'
       : 'Hello THG 4 Pharma, I would like to consult a pharmacist about the German supplements and delivery options.';
 
-  const whatsappUrl = `https://wa.me/201210527717?text=${encodeURIComponent(defaultMessage)}`;
+  const whatsappUrl = `https://wa.me/201220722034?text=${encodeURIComponent(defaultMessage)}`;
 
   return (
     <a

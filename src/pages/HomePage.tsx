@@ -87,7 +87,7 @@ export const HomePage: React.FC = () => {
             </div>
           </div>
           <a
-            href="https://wa.me/201210527717"
+            href="https://wa.me/201220722034"
             target="_blank"
             rel="noopener noreferrer"
             className="shrink-0 px-5 py-2.5 bg-[#0A1628] hover:bg-slate-800 text-white font-bold rounded-xl transition-all"

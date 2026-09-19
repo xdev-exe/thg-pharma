@@ -311,7 +311,7 @@ export const ProductPage: React.FC = () => {
 
                       {/* Direct WhatsApp Order */}
                       <a
-                        href={`https://wa.me/201210527717?text=${whatsAppMessage}`}
+                        href={`https://wa.me/201220722034?text=${whatsAppMessage}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm rounded-xl transition-colors flex items-center justify-center gap-2 shadow-xs"

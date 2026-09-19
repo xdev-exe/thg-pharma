@@ -226,7 +226,7 @@ export const OrderTrackingModal: React.FC = () => {
                   <span>{t('محتاج تغير الميعاد أو تعدل العنوان؟', 'Need to change delivery time or address?')}</span>
                 </div>
                 <a
-                  href={`https://wa.me/201210527717?text=${encodeURIComponent(`أهلاً THG 4 Pharma، حابب أستفسر بخصوص شحنتي رقم ${order.trackingNumber}`)}`}
+                  href={`https://wa.me/201220722034?text=${encodeURIComponent(`أهلاً THG 4 Pharma، حابب أستفسر بخصوص شحنتي رقم ${order.trackingNumber}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="px-3 py-1.5 bg-[#0A1628] text-white font-bold rounded-lg hover:bg-slate-800 transition-colors"

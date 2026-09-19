@@ -77,7 +77,7 @@ export const Footer: React.FC = () => {
               </div>
               <div className="flex items-center gap-2">
                 <PhoneCall size={16} className="text-[#D4A843] shrink-0" />
-                <span>{t('واتساب وخدمة العملاء: 01210527717 (متاحين دايماً نرد عليك)', 'WhatsApp Hotline: +20 121 052 7717 (Always here to help)')}</span>
+                <span>{t('واتساب وخدمة العملاء: 01220722034 (متاحين دايماً نرد عليك)', 'WhatsApp Hotline: +20 122 072 2034 (Always here to help)')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin size={16} className="text-blue-400 shrink-0" />
