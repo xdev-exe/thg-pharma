@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Product } from '../types';
 import { useApp } from '../context/AppContext';
 import { formatEGP } from '../lib/utils';
@@ -9,7 +10,14 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { lang, t, addToCart, buyNow, openProductDetails, openRestockAlert } = useApp();
+  const { lang, t, addToCart, buyNow, openRestockAlert } = useApp();
+  const navigate = useNavigate();
+  const productPath = `/product/${product.id}`;
+
+  const goToProduct = () => {
+    navigate(productPath);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="group relative flex flex-col bg-white rounded-3xl border border-slate-200 shadow-xs hover:shadow-xl transition-all duration-200 overflow-hidden card-hover">
@@ -36,8 +44,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         />
 
         {/* Product Box Image */}
-        <button
-          onClick={() => openProductDetails(product)}
+        <Link
+          to={productPath}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="relative z-10 w-full flex items-center justify-center pt-6 pb-2 cursor-pointer focus:outline-none"
           title={t('عرض التفاصيل الكاملة', 'View Details')}
         >
@@ -50,7 +59,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               loading="lazy"
             />
           </picture>
-        </button>
+        </Link>
 
         {/* Bottom Pill on Image: Pack Size */}
         <div className="absolute bottom-3 inset-x-4 flex items-center justify-between text-[11px]">
@@ -73,12 +82,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <span className="text-[10px] tracking-wider uppercase font-black text-[#C8102E] block">
               {t('مستورد صيدلاني معتمد', 'Certified Pharma Import')}
             </span>
-            <h3
-              onClick={() => openProductDetails(product)}
-              className="text-lg sm:text-xl font-black text-slate-900 mt-0.5 leading-snug cursor-pointer hover:text-[#C8102E] transition-colors"
+            <Link
+              to={productPath}
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="block"
             >
-              {lang === 'ar' ? product.name_ar.split('—')[0] : product.name_en.split('—')[0]}
-            </h3>
+              <h3 className="text-lg sm:text-xl font-black text-slate-900 mt-0.5 leading-snug cursor-pointer hover:text-[#C8102E] transition-colors">
+                {lang === 'ar' ? product.name_ar.split('—')[0] : product.name_en.split('—')[0]}
+              </h3>
+            </Link>
             <p className="text-xs text-slate-500 font-medium line-clamp-1 mt-0.5">
               {lang === 'ar' ? product.name_ar.split('—')[1] : product.name_en.split('—')[1]}
             </p>
@@ -161,7 +173,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                   </button>
 
                   <button
-                    onClick={() => openProductDetails(product)}
+                    onClick={goToProduct}
                     className="py-2.5 px-3 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition-colors flex items-center justify-center gap-1 cursor-pointer"
                   >
                     <Info size={14} />
@@ -180,7 +192,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 </button>
 
                 <button
-                  onClick={() => openProductDetails(product)}
+                  onClick={goToProduct}
                   className="w-full py-3 px-3 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 transition-colors flex items-center justify-center gap-1 cursor-pointer"
                 >
                   <Info size={14} />

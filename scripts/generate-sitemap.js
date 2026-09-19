@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const BASE_URL = 'https://thg4pharma.com';
 const today = new Date().toISOString().split('T')[0];
 
-// Complete product dataset for XML Sitemap & Google Image SEO
+// Complete product dataset for XML Sitemap, Google Indexing & Image SEO
 const products = [
   {
     id: 'pure-3',
@@ -61,15 +61,40 @@ const products = [
 ];
 
 function generateSitemapXml() {
-  const imagesXml = products
+  const homeImagesXml = products
     .map(
-      (p) => `    <!-- ${p.id} Image SEO -->
-    <image:image>
+      (p) => `    <image:image>
       <image:loc>${BASE_URL}${p.image}</image:loc>
       <image:title>${p.nameEn} | ${p.nameAr}</image:title>
       <image:caption>${p.caption}</image:caption>
     </image:image>`
     )
+    .join('\n');
+
+  const productUrlsXml = products
+    .map((p) => {
+      return `  <!-- Product: ${p.id} -->
+  <url>
+    <loc>${BASE_URL}/product/${p.id}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ar-EG" href="${BASE_URL}/product/${p.id}" />
+    <xhtml:link rel="alternate" hreflang="en" href="${BASE_URL}/product/${p.id}?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="${BASE_URL}/product/${p.id}" />
+    <image:image>
+      <image:loc>${BASE_URL}${p.image}</image:loc>
+      <image:title>${p.nameEn} | ${p.nameAr}</image:title>
+      <image:caption>${p.caption}</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>${BASE_URL}/product/${p.slug}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>`;
+    })
     .join('\n\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -77,7 +102,7 @@ function generateSitemapXml() {
         xmlns:xhtml="http://www.w3.org/1999/xhtml"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 
-  <!-- Main Storefront (Covering THG 4 Pharma & Doppelherz / دوبيل هيرز Egypt) -->
+  <!-- Main Storefront (Covering THG 4 Pharma & Doppelherz Egypt) -->
   <url>
     <loc>${BASE_URL}/</loc>
     <lastmod>${today}</lastmod>
@@ -86,9 +111,10 @@ function generateSitemapXml() {
     <xhtml:link rel="alternate" hreflang="ar-EG" href="${BASE_URL}/" />
     <xhtml:link rel="alternate" hreflang="en" href="${BASE_URL}/?lang=en" />
     <xhtml:link rel="alternate" hreflang="x-default" href="${BASE_URL}/" />
-
-${imagesXml}
+${homeImagesXml}
   </url>
+
+${productUrlsXml}
 
 </urlset>
 `;
@@ -98,4 +124,4 @@ const targetPath = path.join(__dirname, '..', 'public', 'sitemap.xml');
 const xmlContent = generateSitemapXml();
 
 fs.writeFileSync(targetPath, xmlContent, 'utf8');
-console.log(`[Sitemap] Generated ${targetPath} successfully on ${today} (6 product image entries)`);
+console.log(`[Sitemap] Generated ${targetPath} successfully on ${today} with dedicated product URLs`);

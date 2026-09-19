@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Logo } from './Logo';
 import {
@@ -17,12 +18,24 @@ export const Header: React.FC = () => {
   const { lang, toggleLang, t, cartCount, openModal, searchQuery, setSearchQuery } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const scrollToSection = (id: string) => {
     setIsMobileMenuOpen(false);
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (location.pathname !== '/') {
+      navigate('/');
+      setTimeout(() => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    } else {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
   };
 
@@ -66,12 +79,13 @@ export const Header: React.FC = () => {
       <div className="glass border-b border-slate-200/80 shadow-xs transition-all">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-2 sm:gap-4">
           {/* Logo */}
-          <a
-            href="#"
+          <Link
+            to="/"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-center focus:outline-none focus:ring-2 focus:ring-[#C8102E] rounded-lg shrink-0"
           >
             <Logo size="md" />
-          </a>
+          </Link>
 
           {/* Desktop Nav Links */}
           <nav className="hidden lg:flex items-center gap-6 xl:gap-8 text-sm font-semibold text-slate-700">
