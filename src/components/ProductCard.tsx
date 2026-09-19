@@ -55,7 +55,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <img
               src={product.image.replace('.webp', '.jpg')}
               alt={lang === 'ar' ? product.name_ar : product.name_en}
-              className="h-44 sm:h-52 w-auto object-contain drop-shadow-[0_12px_20px_rgba(0,0,0,0.14)] group-hover:scale-105 transition-transform duration-200"
+              className="h-44 sm:h-52 w-auto object-contain rounded-2xl drop-shadow-[0_12px_20px_rgba(0,0,0,0.14)] group-hover:scale-105 transition-transform duration-200"
               loading="lazy"
             />
           </picture>

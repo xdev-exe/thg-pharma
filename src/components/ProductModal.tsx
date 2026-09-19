@@ -87,7 +87,7 @@ export const ProductModal: React.FC = () => {
                   <img
                     src={product.image.replace('.webp', '.jpg')}
                     alt={lang === 'ar' ? product.name_ar : product.name_en}
-                    className="h-36 sm:h-44 w-auto object-contain drop-shadow-md"
+                    className="h-36 sm:h-44 w-auto object-contain rounded-xl drop-shadow-md"
                   />
                 </picture>
               </div>

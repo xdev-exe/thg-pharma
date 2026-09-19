@@ -148,7 +148,7 @@ export const ProductPage: React.FC = () => {
                 <img
                   src={product.image.replace('.webp', '.jpg')}
                   alt={lang === 'ar' ? product.name_ar : product.name_en}
-                  className="h-64 sm:h-80 w-auto object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.18)] transition-transform duration-300 group-hover:scale-105"
+                  className="h-64 sm:h-80 w-auto object-contain rounded-2xl drop-shadow-[0_20px_30px_rgba(0,0,0,0.18)] transition-transform duration-300 group-hover:scale-105"
                   loading="eager"
                 />
               </picture>
