@@ -219,15 +219,15 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
       try {
         console.log(`[Order Flow] Attempting immediate ERP Sales Order creation for ${customerName} (${normPhone})...`);
 
-        // a. Upsert Customer in ERP
-        const custRes = await upsertCustomer(customerName.trim(), normPhone);
+        // a. Upsert Customer in ERP with BOTH call phone and WhatsApp phone
+        const custRes = await upsertCustomer(customerName.trim(), normPhone, normWhatsapp);
         if (!custRes.ok) throw new Error(`Customer sync: ${custRes.error}`);
 
         // b. Upsert Address in ERP
         const addrRes = await upsertAddress(custRes.customer_id, address.trim(), governorate || 'Cairo');
         if (!addrRes.ok) throw new Error(`Address sync: ${addrRes.error}`);
 
-        // c. Create Sales Order in ERP (includes company: 'Zabbtnalk' and warehouse: 'Main Store - ZBT')
+        // c. Create Sales Order in ERP (includes company: 'Zabbtnalk', warehouse: 'Main Store - ZBT', both contact phones)
         const erpItems = items.map((i) => ({
           productId: i.productId || i.id,
           name: i.name,
@@ -236,10 +236,14 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
         }));
 
         const erpRes = await createErpOrder({
-          customerId: custRes.customer_id,
-          addressId:  addrRes.address_id,
-          items:      erpItems,
-          deliveryDate: deliveryDateISO,
+          customerId:    custRes.customer_id,
+          addressId:     addrRes.address_id,
+          contactId:     custRes.contact_id || null,
+          callPhone:     normPhone,
+          whatsappPhone: normWhatsapp,
+          notes:         notes.trim(),
+          items:         erpItems,
+          deliveryDate:  deliveryDateISO,
         });
 
         if (!erpRes.ok) throw new Error(`Sales Order: ${erpRes.error}`);

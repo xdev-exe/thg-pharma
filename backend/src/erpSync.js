@@ -99,8 +99,8 @@ async function syncOneOrder(pool, row) {
       [order_id]
     );
 
-    // 2. Upsert customer
-    const custResult = await upsertCustomer(customer_name, phone);
+    // 2. Upsert customer with both phone numbers & linked Contact
+    const custResult = await upsertCustomer(customer_name, phone, whatsapp_phone || phone);
     if (!custResult.ok) throw new Error(`Customer upsert failed: ${custResult.error}`);
 
     // 3. Upsert address
@@ -115,11 +115,15 @@ async function syncOneOrder(pool, row) {
       price: i.unit_price,
     }));
 
-    // 5. Create Sales Order in ERP
+    // 5. Create Sales Order in ERP (includes company, warehouse, and both contact phones)
     const orderResult = await createErpOrder({
-      customerId: custResult.customer_id,
-      addressId:  addrResult.address_id,
-      items:      erpItems,
+      customerId:    custResult.customer_id,
+      addressId:     addrResult.address_id,
+      contactId:     custResult.contact_id || null,
+      callPhone:     phone,
+      whatsappPhone: whatsapp_phone || phone,
+      notes:         row.notes || '',
+      items:         erpItems,
     });
     if (!orderResult.ok) throw new Error(`Order creation failed: ${orderResult.error}`);
 

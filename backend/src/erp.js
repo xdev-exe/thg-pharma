@@ -154,38 +154,146 @@ export async function findCustomer(phone) {
 }
 
 /**
- * Find-or-create ERP customer.
- * Returns { ok, customer_id, customer_name, created }
+ * Find-or-create ERP Contact linked to a Customer with both phone numbers.
+ *
+ * Saves:
+ *  - Primary Mobile (Call Phone): contact.mobile_no
+ *  - Secondary/WhatsApp Phone:   contact.phone
+ *  - Child table phone_nos:      both numbers with appropriate primary flags
+ *
+ * Returns { ok, contact_id } or { ok: false, error }
  */
-export async function upsertCustomer(name, phone) {
-  const cleanName  = cleanInput(name, 100);
-  const normalized = normalizePhone(phone);
+export async function upsertContact(customerId, name, callPhone, whatsappPhone) {
+  const cId = cleanInput(customerId, 100);
+  const cleanName = cleanInput(name, 100);
+  const normCall = normalizePhone(callPhone);
+  const normWhatsapp = normalizePhone(whatsappPhone) || normCall;
 
-  if (cleanName.length < 2) return { ok: false, error: 'Customer name too short' };
-  if (!normalized)           return { ok: false, error: 'Invalid phone number' };
-
-  // Try to find first
-  const found = await findCustomer(normalized);
-  if (!found.ok) return found;
-
-  if (found.found) {
-    return { ok: true, customer_id: found.customer_id, customer_name: found.customer_name, created: false };
+  if (!cId || !cleanName || !normCall) {
+    return { ok: false, error: 'Customer ID, name, and call phone are required for contact' };
   }
 
-  // Create new customer
-  const res = await erpRequest('POST', '/api/resource/Customer', null, {
-    customer_name: cleanName,
-    mobile_no: normalized,
-    customer_type: 'Individual',
-    customer_group: 'Online Store',
-  });
-  if (!res.ok) return res;
+  // Build phone_nos child table
+  const phoneNos = [
+    { phone: normCall, is_primary_mobile_no: 1, is_primary_phone_no: 0 },
+  ];
+  if (normWhatsapp && normWhatsapp !== normCall) {
+    phoneNos.push({ phone: normWhatsapp, is_primary_mobile_no: 0, is_primary_phone_no: 1 });
+  }
+
+  try {
+    // 1. Check if a Contact is already linked to this Customer
+    const searchRes = await erpRequest('GET', '/api/resource/Contact', {
+      filters: JSON.stringify([
+        ['links.link_doctype', '=', 'Customer'],
+        ['links.link_name', '=', cId],
+      ]),
+      fields: JSON.stringify(['name', 'first_name', 'mobile_no', 'phone']),
+      limit: 1,
+    });
+
+    const existingContacts = searchRes.data?.data || [];
+
+    if (existingContacts.length > 0) {
+      const contactId = existingContacts[0].name;
+      // Update existing contact with latest phone numbers
+      const updateRes = await erpRequest('PUT', `/api/resource/Contact/${encodeURIComponent(contactId)}`, null, {
+        first_name: cleanName,
+        mobile_no: normCall,
+        phone: normWhatsapp,
+        phone_nos: phoneNos,
+        is_primary_contact: 1,
+      });
+
+      return {
+        ok: true,
+        contact_id: contactId,
+        created: false,
+      };
+    }
+
+    // 2. Create new Contact linked to this Customer
+    const createRes = await erpRequest('POST', '/api/resource/Contact', null, {
+      first_name: cleanName,
+      is_primary_contact: 1,
+      mobile_no: normCall,
+      phone: normWhatsapp,
+      links: [{ link_doctype: 'Customer', link_name: cId }],
+      phone_nos: phoneNos,
+    });
+
+    if (!createRes.ok) return createRes;
+
+    const newContactId = createRes.data?.data?.name;
+
+    // 3. Set customer_primary_contact on the Customer (best-effort)
+    if (newContactId) {
+      erpRequest('PUT', `/api/resource/Customer/${encodeURIComponent(cId)}`, null, {
+        customer_primary_contact: newContactId,
+        mobile_no: normCall,
+      }).catch(() => {});
+    }
+
+    return {
+      ok: true,
+      contact_id: newContactId,
+      created: true,
+    };
+  } catch (err) {
+    return { ok: false, error: err.message || String(err) };
+  }
+}
+
+/**
+ * Find-or-create ERP customer with both Call and WhatsApp phone numbers.
+ *
+ * Returns { ok, customer_id, customer_name, contact_id, created }
+ */
+export async function upsertCustomer(name, phone, whatsappPhone = '') {
+  const cleanName      = cleanInput(name, 100);
+  const normalizedCall = normalizePhone(phone);
+  const normalizedWA   = normalizePhone(whatsappPhone) || normalizedCall;
+
+  if (cleanName.length < 2) return { ok: false, error: 'Customer name too short' };
+  if (!normalizedCall)      return { ok: false, error: 'Invalid call phone number' };
+
+  // Try to find by call phone first, then by WhatsApp phone if different
+  let found = await findCustomer(normalizedCall);
+  if (!found.ok || !found.found) {
+    if (normalizedWA && normalizedWA !== normalizedCall) {
+      found = await findCustomer(normalizedWA);
+    }
+  }
+  if (!found.ok) return found;
+
+  let customerId = null;
+  let isCreated = false;
+
+  if (found.found) {
+    customerId = found.customer_id;
+  } else {
+    // Create new customer
+    const res = await erpRequest('POST', '/api/resource/Customer', null, {
+      customer_name: cleanName,
+      mobile_no: normalizedCall,
+      customer_type: 'Individual',
+      customer_group: 'Online Store',
+    });
+    if (!res.ok) return res;
+
+    customerId = res.data?.data?.name;
+    isCreated = true;
+  }
+
+  // Create or update linked Contact in ERP so both phone numbers appear under Address & Contact
+  const contactRes = await upsertContact(customerId, cleanName, normalizedCall, normalizedWA);
 
   return {
     ok: true,
-    customer_id: res.data?.data?.name,
+    customer_id: customerId,
     customer_name: cleanName,
-    created: true,
+    contact_id: contactRes.contact_id || null,
+    created: isCreated,
   };
 }
 
@@ -264,7 +372,7 @@ export async function upsertAddress(customerId, addressLine, city) {
  * Returns { ok, erp_order_id } or { ok: false, error }
  */
 export async function createErpOrder(opts) {
-  const { customerId, addressId, items, deliveryDate } = opts;
+  const { customerId, addressId, contactId, callPhone, whatsappPhone, notes, items, deliveryDate } = opts;
 
   if (!customerId) return { ok: false, error: 'Customer ID required' };
   if (!addressId)  return { ok: false, error: 'Address ID required' };
@@ -306,14 +414,29 @@ export async function createErpOrder(opts) {
   if (erpItems.length === 0) return { ok: false, error: 'No valid items' };
   if (erpItems.length > 20)  return { ok: false, error: 'Max 20 items per order' };
 
-  const res = await erpRequest('POST', '/api/resource/Sales Order', null, {
+  const orderPayload = {
     company: ERP_COMPANY,
     set_warehouse: ERP_WAREHOUSE,
     customer: customerId,
     delivery_date: date,
     shipping_address_name: addressId,
     items: erpItems,
-  });
+  };
+
+  if (contactId) {
+    orderPayload.contact_person = contactId;
+  }
+  if (callPhone) {
+    orderPayload.contact_mobile = callPhone;
+  }
+  if (whatsappPhone) {
+    orderPayload.contact_phone = whatsappPhone;
+  }
+
+  const phoneRemark = `📞 المكالمات: ${callPhone || ''}` + (whatsappPhone && whatsappPhone !== callPhone ? ` | 💬 واتساب: ${whatsappPhone}` : '');
+  orderPayload.remarks = notes ? `${phoneRemark}\nملاحظات: ${notes}` : phoneRemark;
+
+  const res = await erpRequest('POST', '/api/resource/Sales Order', null, orderPayload);
   if (!res.ok) return res;
 
   const order = res.data?.data || {};
