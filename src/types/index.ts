@@ -75,6 +75,7 @@ export interface Governorate {
 export interface OrderData {
   name: string;
   phone: string;
+  whatsappPhone: string;
   governorate: string;
   address: string;
   notes: string;

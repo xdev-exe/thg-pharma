@@ -30,6 +30,7 @@ export function normalizeEgPhone(raw: string): string {
 export interface SavedOrder extends OrderResult {
   customerName: string;
   phone: string;
+  whatsappPhone?: string;
   governorate: string;
   address?: string;
   notes?: string;
@@ -54,6 +55,7 @@ export const mockApi = {
     const payload = {
       customerName: orderData.name,
       phone: orderData.phone,
+      whatsappPhone: orderData.whatsappPhone,
       governorate: orderData.governorate,
       address: orderData.address,
       notes: orderData.notes,
@@ -142,6 +144,7 @@ export const mockApi = {
       total,
       customerName: orderData.name,
       phone: orderData.phone,
+      whatsappPhone: orderData.whatsappPhone,
       governorate: orderData.governorate,
       address: orderData.address,
       notes: orderData.notes,
@@ -219,7 +222,8 @@ export const mockApi = {
         (o) =>
           (o.trackingNumber.toUpperCase() === cleanTracking.toUpperCase() ||
            (o.erpOrderId && o.erpOrderId.toUpperCase() === cleanTracking.toUpperCase())) &&
-          normalizeEgPhone(o.phone) === normSearchPhone
+          (normalizeEgPhone(o.phone) === normSearchPhone ||
+           (o.whatsappPhone && normalizeEgPhone(o.whatsappPhone) === normSearchPhone))
       );
 
       if (match) return match;

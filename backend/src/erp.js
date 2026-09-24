@@ -26,6 +26,7 @@ const BASE_URL = (process.env.ERP_URL || '').replace(/\/+$/, '');
 const API_KEY   = process.env.ERP_KEY   || '';
 const API_SECRET = process.env.ERP_SECRET || '';
 const ERP_COMPANY = process.env.ERP_COMPANY || 'Zabbtnalk';
+const ERP_WAREHOUSE = process.env.ERP_WAREHOUSE || 'Main Store - ZBT';
 
 // Map our internal product IDs → ERPNext item codes
 export const PRODUCT_TO_ERP_CODE = {
@@ -294,7 +295,12 @@ export async function createErpOrder(opts) {
     if (!rate || rate <= 0 || rate > 1_000_000) {
       return { ok: false, error: `Invalid price for ${item.productId}` };
     }
-    erpItems.push({ item_code: itemCode, qty, rate });
+    erpItems.push({
+      item_code: itemCode,
+      qty,
+      rate,
+      warehouse: ERP_WAREHOUSE,
+    });
   }
 
   if (erpItems.length === 0) return { ok: false, error: 'No valid items' };
@@ -302,6 +308,7 @@ export async function createErpOrder(opts) {
 
   const res = await erpRequest('POST', '/api/resource/Sales Order', null, {
     company: ERP_COMPANY,
+    set_warehouse: ERP_WAREHOUSE,
     customer: customerId,
     delivery_date: date,
     shipping_address_name: addressId,

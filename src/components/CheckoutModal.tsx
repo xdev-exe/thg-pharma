@@ -32,11 +32,13 @@ export const CheckoutModal: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
+    whatsappPhone: '',
     governorate: 'cairo',
     address: '',
     notes: '',
   });
 
+  const [sameAsCallPhone, setSameAsCallPhone] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'card_delivery'>('cod');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState<any | null>(null);
@@ -59,8 +61,19 @@ export const CheckoutModal: React.FC = () => {
     if (!isValidEgyptianPhone(formData.phone)) {
       setErrorMessage(
         t(
-          'يرجى إدخال رقم هاتف مصري صحيح يبدأ بـ 010 أو 011 أو 012 أو 015',
-          'Please enter a valid Egyptian mobile number (010, 011, 012, 015)'
+          'يرجى إدخال رقم هاتف اتصال مصري صحيح يبدأ بـ 010 أو 011 أو 012 أو 015',
+          'Please enter a valid Egyptian mobile number for calls (010, 011, 012, 015)'
+        )
+      );
+      return;
+    }
+
+    const whatsappValue = sameAsCallPhone ? formData.phone : formData.whatsappPhone;
+    if (!isValidEgyptianPhone(whatsappValue)) {
+      setErrorMessage(
+        t(
+          'يرجى إدخال رقم واتساب مصري صحيح للتواصل ومتابعة الشحنة (يمكنك وضع نفس رقم المكالمات)',
+          'Please enter a valid Egyptian WhatsApp number (can be identical to call number)'
         )
       );
       return;
@@ -77,10 +90,12 @@ export const CheckoutModal: React.FC = () => {
 
     try {
       const normalizedPhone = normalizeEgyptianPhone(formData.phone);
+      const normalizedWhatsapp = normalizeEgyptianPhone(whatsappValue);
       const res = await mockApi.createOrder(
         {
           ...formData,
           phone: normalizedPhone,
+          whatsappPhone: normalizedWhatsapp,
           governorate: lang === 'ar' ? selectedGov.name_ar : selectedGov.name_en,
         },
         cart,
@@ -255,18 +270,68 @@ export const CheckoutModal: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {t('رقم الموبايل (للتواصل والتنسيق) *', 'Mobile Number (Egypt) *')}
+                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                      <span>{t('رقم الموبايل للمكالمات *', 'Call Mobile Number *')}</span>
+                      <span className="text-[10px] text-slate-400 font-normal">{t('للتنسيق الهاتفي', 'For phone call')}</span>
                     </label>
                     <input
                       type="tel"
                       required
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          phone: val,
+                          whatsappPhone: sameAsCallPhone ? val : prev.whatsappPhone,
+                        }));
+                      }}
                       placeholder="010XXXXXXXX"
                       className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#C8102E] text-slate-900"
                     />
                   </div>
+                </div>
+
+                {/* WhatsApp Phone Field with 'Same as Call Number' Option */}
+                <div className="space-y-1.5 bg-slate-50/80 p-3 rounded-2xl border border-slate-200">
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block shrink-0" />
+                      <span>{t('رقم الواتساب (للتتبع والمتابعة الفورية) *', 'WhatsApp Number (for live tracking & updates) *')}</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer select-none font-medium">
+                      <input
+                        type="checkbox"
+                        checked={sameAsCallPhone}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setSameAsCallPhone(checked);
+                          if (checked) {
+                            setFormData((prev) => ({ ...prev, whatsappPhone: prev.phone }));
+                          }
+                        }}
+                        className="w-3.5 h-3.5 text-[#C8102E] rounded border-slate-300 focus:ring-[#C8102E] accent-[#C8102E] cursor-pointer"
+                      />
+                      <span>{t('نفس رقم المكالمات', 'Same as call number')}</span>
+                    </label>
+                  </div>
+                  <input
+                    type="tel"
+                    required
+                    value={sameAsCallPhone ? formData.phone : formData.whatsappPhone}
+                    disabled={sameAsCallPhone}
+                    onChange={(e) => setFormData({ ...formData, whatsappPhone: e.target.value })}
+                    placeholder="01XXXXXXXXX"
+                    className={`w-full border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#C8102E] ${
+                      sameAsCallPhone ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed' : 'bg-white text-slate-900 border-slate-300'
+                    }`}
+                  />
+                  <p className="text-[10px] text-slate-500">
+                    {t(
+                      'مطلوب إدخال رقمين لتأكيد الطلب: رقم للمكالمات ورقم للواتساب (يمكن إدخال نفس الرقم مرتين أو تفعيل الخيار أعلاه).',
+                      'Two numbers required: one for phone calls and one for WhatsApp (can be identical numbers).'
+                    )}
+                  </p>
                 </div>
 
                 <div className="grid sm:grid-cols-2 gap-4">

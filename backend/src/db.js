@@ -40,6 +40,7 @@ export async function initDb() {
         tracking_number VARCHAR(32) NOT NULL UNIQUE,
         customer_name VARCHAR(160) NOT NULL,
         phone VARCHAR(20) NOT NULL,
+        whatsapp_phone VARCHAR(20) NULL,
         governorate VARCHAR(80) NOT NULL,
         address TEXT NOT NULL,
         notes TEXT NULL,
@@ -71,6 +72,7 @@ export async function initDb() {
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
         INDEX idx_tracking (tracking_number),
         INDEX idx_phone (phone),
+        INDEX idx_whatsapp (whatsapp_phone),
         INDEX idx_ip (ip_address),
         INDEX idx_suspicious (is_suspicious),
         INDEX idx_created (created_at)
@@ -92,6 +94,7 @@ export async function initDb() {
       { name: 'risk_score', type: 'INT NOT NULL DEFAULT 0' },
       { name: 'is_suspicious', type: 'TINYINT(1) NOT NULL DEFAULT 0' },
       { name: 'risk_flags', type: 'TEXT NULL' },
+      { name: 'whatsapp_phone', type: 'VARCHAR(20) NULL' },
     ];
 
     for (const col of securityColumns) {
@@ -101,6 +104,7 @@ export async function initDb() {
         // Column already exists or table is up to date, ignore
       }
     }
+    await pool.query(`ALTER TABLE orders ADD INDEX idx_whatsapp (whatsapp_phone);`).catch(() => {});
 
     // 4. Create order_items table
     await pool.query(`

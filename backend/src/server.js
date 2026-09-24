@@ -5,7 +5,7 @@ import rateLimit from 'express-rate-limit';
 import { initDb, getDb, isDbConnected } from './db.js';
 import { getClientIp, parseClientDevice, evaluateOrderRisk, normalizePhone } from './security.js';
 import { enqueueOrder, startErpSync } from './erpSync.js';
-import { getErpOrderStatus, isConfigured } from './erp.js';
+import { upsertCustomer, upsertAddress, createErpOrder, getErpOrderStatus, isConfigured } from './erp.js';
 import { notifyOrderCreated } from './orderNotify.js';
 
 dotenv.config();
@@ -142,12 +142,13 @@ app.get(['/health', '/api/health'], (req, res) => {
   });
 });
 
-// Create Order endpoint with deep security telemetry
+// Create Order endpoint with deep security telemetry & ERP-first tracking allocation
 app.post('/api/orders', orderCreationLimiter, async (req, res) => {
   try {
     const {
       customerName,
       phone,
+      whatsappPhone,
       governorate,
       address,
       notes = '',
@@ -159,10 +160,24 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
       total = 0,
     } = req.body;
 
-    // 1. Basic validation
-    if (!customerName || !phone || !address) {
+    const rawCallPhone     = String(phone || '').trim();
+    const rawWhatsappPhone = String(whatsappPhone || req.body.whatsapp_phone || '').trim();
+
+    // 1. Basic validation (requires recipient name, address, and BOTH phone numbers)
+    if (!customerName || !rawCallPhone || !rawWhatsappPhone || !address) {
       return res.status(400).json({
-        error: 'Missing required delivery fields (customerName, phone, address)',
+        error: 'Missing required delivery fields. Name, call phone, WhatsApp phone, and address are all required.',
+        code: 'MISSING_FIELDS',
+      });
+    }
+
+    const normPhone    = normalizePhone(rawCallPhone);
+    const normWhatsapp = normalizePhone(rawWhatsappPhone);
+
+    if (!normPhone || !normWhatsapp) {
+      return res.status(400).json({
+        error: 'Both phone numbers must be valid 11-digit Egyptian mobile numbers (010, 011, 012, 015).',
+        code: 'INVALID_PHONE_FORMAT',
       });
     }
 
@@ -176,16 +191,16 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
     // 3. Evaluate fraud / cyber risk score
     const riskAssessment = evaluateOrderRisk({
       ip,
-      phone,
+      phone: normPhone,
       userAgent,
       items,
       customerName,
       total,
     });
 
-    const trackingNumber = generateTrackingNumber();
     const now = new Date();
     const deliveryDate = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+    const deliveryDateISO = deliveryDate.toISOString().split('T')[0];
     const estimatedDelivery = deliveryDate.toLocaleDateString('ar-EG', {
       weekday: 'long',
       year: 'numeric',
@@ -193,21 +208,73 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
       day: 'numeric',
     });
 
+    // 4. ERP-First Order Creation Strategy
+    // Attempt to register the Sales Order in ERPNext immediately so the customer and
+    // internal tools receive the real ERP sales order tracking ID right away.
+    let erpOrderId = null;
+    let erpSynced = false;
+    let erpError = null;
+
+    if (isConfigured()) {
+      try {
+        console.log(`[Order Flow] Attempting immediate ERP Sales Order creation for ${customerName} (${normPhone})...`);
+
+        // a. Upsert Customer in ERP
+        const custRes = await upsertCustomer(customerName.trim(), normPhone);
+        if (!custRes.ok) throw new Error(`Customer sync: ${custRes.error}`);
+
+        // b. Upsert Address in ERP
+        const addrRes = await upsertAddress(custRes.customer_id, address.trim(), governorate || 'Cairo');
+        if (!addrRes.ok) throw new Error(`Address sync: ${addrRes.error}`);
+
+        // c. Create Sales Order in ERP (includes company: 'Zabbtnalk' and warehouse: 'Main Store - ZBT')
+        const erpItems = items.map((i) => ({
+          productId: i.productId || i.id,
+          name: i.name,
+          qty: i.qty || i.quantity || 1,
+          price: i.price,
+        }));
+
+        const erpRes = await createErpOrder({
+          customerId: custRes.customer_id,
+          addressId:  addrRes.address_id,
+          items:      erpItems,
+          deliveryDate: deliveryDateISO,
+        });
+
+        if (!erpRes.ok) throw new Error(`Sales Order: ${erpRes.error}`);
+
+        erpOrderId = erpRes.erp_order_id;
+        erpSynced = true;
+        console.log(`[Order Flow] SUCCESS: Immediate ERP Sales Order created -> ${erpOrderId}`);
+      } catch (err) {
+        erpError = err.message || String(err);
+        console.warn(`[Order Flow] ERP first attempt failed (${erpError}). Falling back to local tracking queue...`);
+      }
+    }
+
+    // Allocate tracking number:
+    // If successfully created in ERP, the ERP Sales Order number IS the tracking code.
+    // If ERP is unreachable or failed, generate a local fallback tracking number (THG-EG-XXXXXX).
+    const trackingNumber = erpSynced && erpOrderId ? erpOrderId : generateTrackingNumber();
+
     const pool = getDb();
 
     if (pool && isDbConnected()) {
-      // MySQL insertion with full security telemetry
+      // MySQL insertion with full security telemetry & both phone numbers
       const [orderResult] = await pool.query(
         `INSERT INTO orders 
-        (tracking_number, customer_name, phone, governorate, address, notes, payment_method, 
+        (tracking_number, customer_name, phone, whatsapp_phone, governorate, address, notes, payment_method, 
          subtotal, discount, shipping, total, estimated_delivery, status,
+         erp_order_id, erp_synced_at, erp_sync_error,
          ip_address, user_agent, device_type, device_model, os_name, os_version,
          browser_name, browser_version, client_language, referrer, risk_score, is_suspicious, risk_flags, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         [
           trackingNumber,
           customerName.trim(),
-          phone.trim(),
+          normPhone,
+          normWhatsapp,
           governorate || 'القاهرة',
           address.trim(),
           notes.trim(),
@@ -217,6 +284,9 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
           shipping,
           total,
           estimatedDelivery,
+          erpOrderId,
+          erpSynced ? new Date() : null,
+          erpError,
           ip,
           userAgent,
           device.deviceType,
@@ -254,30 +324,36 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
       }
 
       console.log(
-        `[Order Verified] ${trackingNumber} | ${customerName} | IP: ${ip} | Device: ${device.deviceModel} (${device.osName}) | Risk: ${riskAssessment.riskScore}`
+        `[Order Verified] ${trackingNumber} | ${customerName} | Call: ${normPhone} | WhatsApp: ${normWhatsapp} | IP: ${ip} | Device: ${device.deviceModel} | Risk: ${riskAssessment.riskScore}`
       );
 
-      // Fire-and-forget: push to ERP asynchronously — customer already has their tracking number
-      enqueueOrder(orderId);
+      // If ERP creation did not succeed immediately, enqueue for background retry worker
+      if (!erpSynced) {
+        enqueueOrder(orderId);
+      }
 
       // Fire-and-forget: notify team via WhatsApp notification service (/order-notify)
       notifyOrderCreated({
-        tracking_number: trackingNumber,
-        customer_name: customerName,
-        customer_phone: phone,
+        erp_order_id:     erpOrderId,
+        tracking_number:  trackingNumber,
+        customer_name:    customerName,
+        customer_phone:   normPhone,
+        whatsapp_phone:   normWhatsapp,
         shipping_address: `${address}, ${governorate || 'القاهرة'}`,
-        delivery_date: new Date(Date.now() + 48 * 3600 * 1000).toISOString().split('T')[0],
+        delivery_date:    deliveryDateISO,
         items,
-        grand_total: total,
-        currency: 'EGP',
-        notes,
+        grand_total:      total,
+        currency:         'EGP',
+        notes:            notes + (normWhatsapp !== normPhone ? ` [واتساب: ${normWhatsapp}]` : ''),
       });
     } else {
       // In-memory fallback with full telemetry
       const savedOrder = {
         trackingNumber,
+        erpOrderId,
         customerName,
-        phone,
+        phone: normPhone,
+        whatsappPhone: normWhatsapp,
         governorate,
         address,
         notes,
@@ -300,26 +376,30 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
       };
       memoryOrders.unshift(savedOrder);
       console.log(
-        `[Order in Memory Fallback] ${trackingNumber} | IP: ${ip} | Device: ${device.deviceModel} | Risk: ${riskAssessment.riskScore}`
+        `[Order in Memory Fallback] ${trackingNumber} | Call: ${normPhone} | WhatsApp: ${normWhatsapp} | Risk: ${riskAssessment.riskScore}`
       );
 
       // Fire-and-forget notification even in memory fallback
       notifyOrderCreated({
-        tracking_number: trackingNumber,
-        customer_name: customerName,
-        customer_phone: phone,
+        erp_order_id:     erpOrderId,
+        tracking_number:  trackingNumber,
+        customer_name:    customerName,
+        customer_phone:   normPhone,
+        whatsapp_phone:   normWhatsapp,
         shipping_address: `${address}, ${governorate || 'القاهرة'}`,
-        delivery_date: new Date(Date.now() + 48 * 3600 * 1000).toISOString().split('T')[0],
+        delivery_date:    deliveryDateISO,
         items,
-        grand_total: total,
-        currency: 'EGP',
-        notes,
+        grand_total:      total,
+        currency:         'EGP',
+        notes:            notes + (normWhatsapp !== normPhone ? ` [واتساب: ${normWhatsapp}]` : ''),
       });
     }
 
     res.status(201).json({
       success: true,
       trackingNumber,
+      erpOrderId: erpOrderId || null,
+      erpSynced,
       status: 'confirmed',
       estimatedDelivery,
       items: items.map((i) => ({
@@ -331,7 +411,9 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
       discount,
       shipping,
       total,
-      message: 'Order placed securely',
+      phone: normPhone,
+      whatsappPhone: normWhatsapp,
+      message: erpSynced ? 'Order created directly in ERP' : 'Order placed and queued for ERP sync',
     });
   } catch (error) {
     console.error('[Error Creating Order]:', error);
@@ -423,7 +505,7 @@ async function handleOrderTrack(req, res) {
     if (pool && isDbConnected()) {
       // 1. Match against either internal tracking number OR ERP external Sales Order ID (case-insensitive)
       const [rows] = await pool.query(
-        `SELECT id, tracking_number, erp_order_id, customer_name, phone,
+        `SELECT id, tracking_number, erp_order_id, customer_name, phone, whatsapp_phone,
                 governorate, payment_method, subtotal, discount, shipping,
                 total, status, estimated_delivery, created_at, erp_synced_at
          FROM orders
@@ -447,11 +529,14 @@ async function handleOrderTrack(req, res) {
 
       const order = rows[0];
 
-      // 2. Strict phone ownership verification
-      const storedPhone = normalizePhone(order.phone);
-      if (storedPhone !== phone) {
+      // 2. Strict phone ownership verification (accepts either the call phone OR WhatsApp phone)
+      const storedCallPhone     = normalizePhone(order.phone);
+      const storedWhatsappPhone = normalizePhone(order.whatsapp_phone || '');
+      const isOwner = (phone === storedCallPhone || (storedWhatsappPhone && phone === storedWhatsappPhone));
+
+      if (!isOwner) {
         const ip = getClientIp(req);
-        console.warn(`[Security] Tracking ownership mismatch: ${rawTracking} queried with phone ${phone}, stored ${storedPhone} | IP: ${ip}`);
+        console.warn(`[Security] Tracking ownership mismatch: ${rawTracking} queried with phone ${phone} | Call: ${storedCallPhone}, WA: ${storedWhatsappPhone} | IP: ${ip}`);
         try {
           await pool.query(
             `INSERT INTO security_audit_logs
@@ -503,6 +588,7 @@ async function handleOrderTrack(req, res) {
         statusLabel_en:   statusLabels.en,
         customerName:     order.customer_name,
         phone:            order.phone,
+        whatsappPhone:    order.whatsapp_phone || order.phone,
         governorate:      order.governorate,
         paymentMethod:    order.payment_method,
         subtotal:         order.subtotal,
@@ -522,7 +608,7 @@ async function handleOrderTrack(req, res) {
       (o) =>
         (o.trackingNumber.toUpperCase() === rawTracking.toUpperCase() ||
          (o.erpOrderId && o.erpOrderId.toUpperCase() === rawTracking.toUpperCase())) &&
-        normalizePhone(o.phone) === phone
+        (normalizePhone(o.phone) === phone || normalizePhone(o.whatsappPhone || '') === phone)
     );
 
     if (match) {

@@ -66,15 +66,15 @@ async function listOrders() {
   if (search.trim()) {
     const like = `%${search.trim()}%`;
     [rows] = await pool.query(
-      `SELECT tracking_number, customer_name, phone, governorate, total, status, is_suspicious, created_at
+      `SELECT tracking_number, customer_name, phone, whatsapp_phone, governorate, total, status, is_suspicious, created_at
        FROM orders
-       WHERE tracking_number LIKE ? OR phone LIKE ? OR customer_name LIKE ?
+       WHERE tracking_number LIKE ? OR phone LIKE ? OR whatsapp_phone LIKE ? OR customer_name LIKE ?
        ORDER BY id DESC LIMIT 25`,
-      [like, like, like]
+      [like, like, like, like]
     );
   } else {
     [rows] = await pool.query(
-      `SELECT tracking_number, customer_name, phone, governorate, total, status, is_suspicious, created_at
+      `SELECT tracking_number, customer_name, phone, whatsapp_phone, governorate, total, status, is_suspicious, created_at
        FROM orders ORDER BY id DESC LIMIT 25`
     );
   }
@@ -130,7 +130,8 @@ async function inspectOrder() {
   console.log('====================================================');
   console.log(`Status:             ${order.status.toUpperCase()}`);
   console.log(`Customer:           ${order.customer_name}`);
-  console.log(`Phone:              ${order.phone}`);
+  console.log(`Phone (Calls):      ${order.phone}`);
+  console.log(`WhatsApp:           ${order.whatsapp_phone || order.phone}`);
   console.log(`Governorate:        ${order.governorate}`);
   console.log(`Address:            ${order.address}`);
   console.log(`Notes:              ${order.notes || 'None'}`);

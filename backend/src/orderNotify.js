@@ -52,6 +52,7 @@ export async function notifyOrderCreated(payload) {
       tracking_number:  payload.tracking_number,
       customer_name:    payload.customer_name,
       customer_phone:   payload.customer_phone,
+      whatsapp_phone:   payload.whatsapp_phone || payload.customer_phone,
       shipping_address: payload.shipping_address,
       delivery_date:    payload.delivery_date || null,
       items: (payload.items || []).map((i) => ({

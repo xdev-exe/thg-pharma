@@ -58,7 +58,7 @@ async function processPendingQueue() {
   try {
     [rows] = await pool.query(
       `SELECT q.id, q.order_id, q.attempts,
-              o.tracking_number, o.customer_name, o.phone,
+              o.tracking_number, o.customer_name, o.phone, o.whatsapp_phone,
               o.address, o.governorate, o.notes
        FROM erp_sync_queue q
        JOIN orders o ON o.id = q.order_id
@@ -79,7 +79,7 @@ async function processPendingQueue() {
 
 async function syncOneOrder(pool, row) {
   const { id: queueId, order_id, attempts, tracking_number,
-          customer_name, phone, address, governorate } = row;
+          customer_name, phone, whatsapp_phone, address, governorate } = row;
 
   // Mark as in-progress to avoid double-processing on next tick
   try {
@@ -144,15 +144,16 @@ async function syncOneOrder(pool, row) {
 
     // Notify team via WhatsApp notification service (/order-notify) with ERP order ID
     notifyOrderCreated({
-      erp_order_id: erpOrderId,
-      tracking_number: tracking_number,
+      erp_order_id:     erpOrderId,
+      tracking_number:  tracking_number,
       customer_name,
-      customer_phone: phone,
+      customer_phone:   phone,
+      whatsapp_phone:   whatsapp_phone || phone,
       shipping_address: `${address}, ${governorate}`,
-      items: erpItems,
-      grand_total: orderResult.grand_total,
-      currency: orderResult.currency || 'EGP',
-      notes: row.notes || '',
+      items:            erpItems,
+      grand_total:      orderResult.grand_total,
+      currency:         orderResult.currency || 'EGP',
+      notes:            (row.notes || '') + (whatsapp_phone && whatsapp_phone !== phone ? ` [واتساب: ${whatsapp_phone}]` : ''),
     });
 
   } catch (err) {
