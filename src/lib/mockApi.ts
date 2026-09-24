@@ -3,16 +3,43 @@ import { generateTrackingNumber } from './utils';
 
 const ORDERS_KEY = 'thg_pharma_orders_v1';
 const WAITLIST_KEY = 'thg_pharma_waitlist_v1';
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8877/api';
+
+// Smart API endpoint resolution:
+// If explicitly provided via VITE_API_URL, use it.
+// If running in browser on production domain (thg4pharma.com), use the production API.
+// Otherwise, default to local Express backend on port 8877.
+const API_BASE_URL =
+  (import.meta as any).env?.VITE_API_URL ||
+  (typeof window !== 'undefined' && window.location.hostname.includes('thg4pharma.com')
+    ? 'https://api.thg4pharma.com/api'
+    : 'http://localhost:8877/api');
+
+// Normalizes Egyptian phone numbers across all formats to canonical 01XXXXXXXXX
+export function normalizeEgPhone(raw: string): string {
+  if (!raw) return '';
+  const digits = String(raw).replace(/\D/g, '');
+  if (digits.startsWith('002001') && digits.length === 15) return digits.slice(4);
+  if (digits.startsWith('00201') && digits.length === 14) return '0' + digits.slice(4);
+  if (digits.startsWith('2001') && digits.length === 13) return digits.slice(2);
+  if (digits.startsWith('20') && digits.length === 12) return '0' + digits.slice(2);
+  if (digits.length === 10 && /^1[0125]/.test(digits)) return '0' + digits;
+  if (digits.length === 11 && digits.startsWith('01')) return digits;
+  return digits;
+}
 
 export interface SavedOrder extends OrderResult {
   customerName: string;
   phone: string;
   governorate: string;
-  address: string;
+  address?: string;
   notes?: string;
-  paymentMethod: string;
-  createdAt: string;
+  paymentMethod?: string;
+  createdAt?: string;
+  erpOrderId?: string | null;
+  erpSynced?: boolean;
+  statusLabel_ar?: string;
+  statusLabel_en?: string;
+  currency?: string;
 }
 
 export const mockApi = {
@@ -166,9 +193,19 @@ export const mockApi = {
         return data;
       }
 
-      // 404 = not found or ownership mismatch — surface as null
+      // 429 = Rate limited by backend security
+      if (response.status === 429) {
+        const err = new Error('RATE_LIMIT_EXCEEDED');
+        (err as any).status = 429;
+        throw err;
+      }
+
+      // 404 = not found or phone mismatch — surface as null
       if (response.status === 404) return null;
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.message === 'RATE_LIMIT_EXCEEDED' || err?.status === 429) {
+        throw err;
+      }
       console.warn('[API] Backend lookup unreachable, checking local storage:', (err as Error).message);
     }
 
@@ -177,10 +214,12 @@ export const mockApi = {
       const existingRaw = localStorage.getItem(ORDERS_KEY);
       const existing: SavedOrder[] = existingRaw ? JSON.parse(existingRaw) : [];
 
+      const normSearchPhone = normalizeEgPhone(cleanPhone);
       const match = existing.find(
         (o) =>
-          o.trackingNumber.toUpperCase() === cleanTracking.toUpperCase() &&
-          o.phone.replace(/\s+/g, '') === cleanPhone.replace(/\s+/g, '')
+          (o.trackingNumber.toUpperCase() === cleanTracking.toUpperCase() ||
+           (o.erpOrderId && o.erpOrderId.toUpperCase() === cleanTracking.toUpperCase())) &&
+          normalizeEgPhone(o.phone) === normSearchPhone
       );
 
       if (match) return match;

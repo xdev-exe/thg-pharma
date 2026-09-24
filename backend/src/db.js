@@ -151,6 +151,42 @@ export async function initDb() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
+    // 7. Add ERP sync columns to orders (safe — ignored if already present)
+    const erpColumns = [
+      { name: 'erp_order_id',  type: 'VARCHAR(64) NULL' },
+      { name: 'erp_synced_at', type: 'DATETIME NULL' },
+      { name: 'erp_sync_error', type: 'TEXT NULL' },
+    ];
+    for (const col of erpColumns) {
+      try {
+        await pool.query(`ALTER TABLE orders ADD COLUMN ${col.name} ${col.type};`);
+        await pool.query(`ALTER TABLE orders ADD INDEX idx_erp_order_id (erp_order_id);`).catch(() => {});
+      } catch (e) {
+        // Column already exists — fine
+      }
+    }
+
+    // 8. Create erp_sync_queue table
+    // Tracks the async push of each web order into ERPNext with retry logic.
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS erp_sync_queue (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        order_id INT NOT NULL UNIQUE,
+        erp_order_id VARCHAR(64) NULL,
+        status ENUM('pending','processing','retrying','synced','failed') NOT NULL DEFAULT 'pending',
+        attempts INT NOT NULL DEFAULT 0,
+        last_error TEXT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        last_attempt_at DATETIME NULL,
+        next_attempt_at DATETIME NULL,
+        synced_at DATETIME NULL,
+        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+        INDEX idx_queue_status (status),
+        INDEX idx_queue_next (next_attempt_at),
+        INDEX idx_queue_order (order_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
     isConnected = true;
     console.log(`[Database] Connected successfully to MySQL database "${config.database}" on ${config.host}:${config.port}`);
     return pool;

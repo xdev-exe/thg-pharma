@@ -53,8 +53,17 @@ export const OrderTrackingModal: React.FC = () => {
           )
         );
       }
-    } catch {
-      setError(t('حدث خطأ أثناء الاستعلام، يرجى المحاولة مجدداً', 'Lookup error, please try again'));
+    } catch (err: any) {
+      if (err?.message === 'RATE_LIMIT_EXCEEDED' || err?.status === 429) {
+        setError(
+          t(
+            'تم تجاوز حد محاولات التتبع المسموح بها مؤقتاً لحماية أمان طلبك. يرجى الانتظار بضع دقائق ثم المحاولة مجدداً.',
+            'Too many tracking requests from this connection. Please wait a few minutes and try again.'
+          )
+        );
+      } else {
+        setError(t('حدث خطأ أثناء الاستعلام، يرجى المحاولة مجدداً', 'Lookup error, please try again'));
+      }
     } finally {
       setLoading(false);
     }
@@ -75,7 +84,7 @@ export const OrderTrackingModal: React.FC = () => {
       title_en: 'Cold-Chain Pharma Prep',
       desc_ar: 'بنجهز طلبك من مستودع التبريد الصيدلي تحت 25° م',
       desc_en: 'Packaged from climate-controlled warehouse',
-      done: true,
+      done: order ? ['quality_check', 'in_transit', 'out_for_delivery', 'delivered'].includes(order.status) : false,
     },
     {
       id: 'transit',
@@ -83,7 +92,7 @@ export const OrderTrackingModal: React.FC = () => {
       title_en: 'In Transit with Courier',
       desc_ar: 'الشحنة حالياً مع شركة الشحن السريع في طريقها لمحافظتك',
       desc_en: 'Handed over to express courier in your area',
-      done: order ? order.status !== 'confirmed' : false,
+      done: order ? ['in_transit', 'out_for_delivery', 'delivered'].includes(order.status) : false,
     },
     {
       id: 'delivered',
@@ -179,11 +188,26 @@ export const OrderTrackingModal: React.FC = () => {
                   <div className="text-base sm:text-lg font-black text-[#0A1628]">
                     {order.trackingNumber}
                   </div>
+                  {order.erpOrderId && (
+                    <div className="text-[11px] text-slate-500 font-mono mt-1 flex items-center gap-1">
+                      <span>{t('رقم أمر التوريد (ERP):', 'ERP Reference:')}</span>
+                      <span className="font-bold text-slate-800 bg-slate-200/80 px-1.5 py-0.5 rounded text-[10px]">{order.erpOrderId}</span>
+                    </div>
+                  )}
                 </div>
                 <div className="text-right rtl:text-left">
-                  <span className="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full inline-flex items-center gap-1">
+                  <span className={`text-xs font-bold px-3 py-1 rounded-full inline-flex items-center gap-1 ${
+                    order.status === 'delivered' ? 'bg-emerald-100 text-emerald-800' :
+                    order.status === 'cancelled' ? 'bg-rose-100 text-rose-800' :
+                    order.status === 'in_transit' || order.status === 'out_for_delivery' ? 'bg-blue-100 text-blue-800' :
+                    'bg-amber-100 text-amber-800'
+                  }`}>
                     <CheckCircle2 size={13} />
-                    <span>{t('الشحنة في طريقها إليك', 'Express In Transit')}</span>
+                    <span>
+                      {lang === 'ar'
+                        ? (order.statusLabel_ar || (order.status === 'confirmed' ? 'تم تأكيد الطلب' : order.status))
+                        : (order.statusLabel_en || (order.status === 'confirmed' ? 'Order Confirmed' : order.status))}
+                    </span>
                   </span>
                 </div>
               </div>
@@ -233,25 +257,39 @@ export const OrderTrackingModal: React.FC = () => {
                   <span className="text-slate-500">{t('الميعاد المتوقع لوصول المندوب:', 'Estimated Window:')}</span>
                   <span className="font-bold text-emerald-700">{order.estimatedDelivery}</span>
                 </div>
+
+                {/* Ordered Items Breakdown */}
+                {order.items && order.items.length > 0 && (
+                  <div className="border-b border-slate-200 pb-2 space-y-1.5">
+                    <span className="text-slate-500 block text-[11px] font-bold uppercase">{t('المنتجات في الشحنة:', 'Items in Shipment:')}</span>
+                    {order.items.map((item: any, i: number) => (
+                      <div key={i} className="flex items-center justify-between text-slate-800 text-[11px]">
+                        <span className="truncate max-w-[280px]">• {item.qty}× {item.name}</span>
+                        <span className="font-bold text-slate-900 shrink-0">{formatEGP((item.price || 0) * (item.qty || 1), lang)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-slate-500">{t('المبلغ المطلوب عند الاستلام:', 'Total COD Due:')}</span>
+                  <span className="text-slate-500 font-bold">{t('المبلغ المطلوب عند الاستلام:', 'Total COD Due:')}</span>
                   <span className="font-black text-sm text-[#C8102E]">{formatEGP(order.total, lang)}</span>
                 </div>
               </div>
 
               {/* Customer Service Support CTA */}
-              <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-between text-xs">
+              <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-between text-xs gap-3">
                 <div className="flex items-center gap-2 text-blue-900">
-                  <PhoneCall size={16} className="text-[#C8102E]" />
-                  <span>{t('محتاج تغير الميعاد أو تعدل العنوان؟', 'Need to change delivery time or address?')}</span>
+                  <PhoneCall size={16} className="text-[#C8102E] shrink-0" />
+                  <span>{t('محتاج تعدل العنوان أو تستفسر عن شحنتك؟ تواصل مع المساعد الذكي', 'Need to change delivery details? Chat with our AI Agent')}</span>
                 </div>
                 <a
-                  href={`https://wa.me/201220722034?text=${encodeURIComponent(`أهلاً THG 4 Pharma، حابب أستفسر بخصوص شحنتي رقم ${order.trackingNumber}`)}`}
+                  href={`https://wa.me/201210527717?text=${encodeURIComponent(`أهلاً THG 4 Pharma، حابب أستفسر بخصوص شحنتي رقم ${order.trackingNumber}`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 bg-[#0A1628] text-white font-bold rounded-lg hover:bg-slate-800 transition-colors"
+                  className="px-3.5 py-1.5 bg-[#0A1628] hover:bg-slate-800 text-white font-bold rounded-lg transition-colors whitespace-nowrap shrink-0"
                 >
-                  {t('كلمنا واتساب', 'Chat on WhatsApp')}
+                  {t('المساعد الذكي واتساب', 'WhatsApp AI Agent')}
                 </a>
               </div>
             </div>

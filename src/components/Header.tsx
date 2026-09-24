@@ -63,13 +63,13 @@ export const Header: React.FC = () => {
             </div>
             <span>•</span>
             <a
-              href="https://wa.me/201220722034"
+              href="https://wa.me/201210527717"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 hover:text-white transition-colors"
             >
               <PhoneCall size={12} className="text-emerald-400" />
-              <span>{t('كلمنا واتساب: 01220722034', 'WhatsApp: 01220722034')}</span>
+              <span>{t('المساعد الذكي (طلب وتتبع): 01210527717', 'WhatsApp AI Agent: +20 121 052 7717')}</span>
             </a>
           </div>
         </div>

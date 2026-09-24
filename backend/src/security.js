@@ -1,6 +1,48 @@
 import { UAParser } from 'ua-parser-js';
 
 /**
+ * Canonical Egyptian phone normalizer.
+ *
+ * Accepts any of the common formats a customer might type:
+ *   01XXXXXXXXX        (local 11-digit)
+ *   1XXXXXXXXXX        (local without leading 0 — 10 digit)
+ *   201XXXXXXXXX       (E.164 without +)
+ *   +201XXXXXXXXX      (full E.164)
+ *   00201XXXXXXXXX     (IDD prefix)
+ *   002001XXXXXXXXX    (double-country prefix typo)
+ *
+ * Always returns the canonical LOCAL form: 01XXXXXXXXX
+ * Returns '' if the input cannot be recognized as an Egyptian mobile number.
+ *
+ * This function is the single source of truth used by:
+ *   - POST /api/orders/track   (ownership check)
+ *   - ERP customer upsert      (erp.js)
+ *   - WhatsApp agent MCP       (passes phone from conversation)
+ *   - CLI operator tools       (search)
+ */
+export function normalizePhone(raw) {
+  if (!raw) return '';
+  // Strip everything except digits and leading +
+  const stripped = String(raw).replace(/[\s\-().]/g, '');
+  let digits = stripped.replace(/\D/g, '');
+
+  // 002001XXXXXXXX (15 digits)
+  if (digits.startsWith('002001') && digits.length === 15) digits = digits.slice(4);
+  // 00201XXXXXXXX (14 digits)
+  else if (digits.startsWith('00201') && digits.length === 14) digits = '0' + digits.slice(4);
+  // 2001XXXXXXXX (13 digits)
+  else if (digits.startsWith('2001') && digits.length === 13) digits = digits.slice(2);
+  // 201XXXXXXXXX (12 digits) — E.164 without +
+  else if (digits.startsWith('20') && digits.length === 12) digits = '0' + digits.slice(2);
+  // 1XXXXXXXXXX (10 digits) — missing leading 0
+  else if (digits.length === 10 && /^1[0125]/.test(digits)) digits = '0' + digits;
+
+  // Validate: must now be 01[0125]XXXXXXXX
+  if (/^01[0125][0-9]{8}$/.test(digits)) return digits;
+  return '';
+}
+
+/**
  * Extracts the real client IP address, handling proxies, Cloudflare, Vercel, and Nginx.
  */
 export function getClientIp(req) {

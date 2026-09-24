@@ -128,12 +128,12 @@ export const HeritageSection: React.FC = () => {
                     <div className="font-bold text-white mt-0.5">{t('القاهرة، مصر • مستودعات التبريد الدوائي', 'Cairo, Egypt • Cold-Chain Logistics Hub')}</div>
                   </div>
                   <a
-                    href="https://wa.me/201220722034"
+                    href="https://wa.me/201210527717"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-4 py-2 bg-[#C8102E] hover:bg-[#9B0D24] text-white font-bold rounded-xl transition-colors"
                   >
-                    {t('كلمنا واتساب', 'Contact on WhatsApp')}
+                    {t('المساعد الذكي واتساب', 'WhatsApp AI Agent')}
                   </a>
                 </div>
               </div>

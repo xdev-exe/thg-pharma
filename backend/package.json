@@ -10,7 +10,8 @@
     "dev": "node --watch src/server.js",
     "db:init": "node scripts/init-db.js",
     "prisma:push": "npx prisma db push",
-    "prisma:studio": "npx prisma studio"
+    "prisma:studio": "npx prisma studio",
+    "cli": "node src/cli.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

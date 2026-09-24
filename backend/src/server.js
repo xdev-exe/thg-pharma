@@ -3,7 +3,10 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import rateLimit from 'express-rate-limit';
 import { initDb, getDb, isDbConnected } from './db.js';
-import { getClientIp, parseClientDevice, evaluateOrderRisk } from './security.js';
+import { getClientIp, parseClientDevice, evaluateOrderRisk, normalizePhone } from './security.js';
+import { enqueueOrder, startErpSync } from './erpSync.js';
+import { getErpOrderStatus, isConfigured } from './erp.js';
+import { notifyOrderCreated } from './orderNotify.js';
 
 dotenv.config();
 
@@ -253,6 +256,22 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
       console.log(
         `[Order Verified] ${trackingNumber} | ${customerName} | IP: ${ip} | Device: ${device.deviceModel} (${device.osName}) | Risk: ${riskAssessment.riskScore}`
       );
+
+      // Fire-and-forget: push to ERP asynchronously — customer already has their tracking number
+      enqueueOrder(orderId);
+
+      // Fire-and-forget: notify team via WhatsApp notification service (/order-notify)
+      notifyOrderCreated({
+        tracking_number: trackingNumber,
+        customer_name: customerName,
+        customer_phone: phone,
+        shipping_address: `${address}, ${governorate || 'القاهرة'}`,
+        delivery_date: new Date(Date.now() + 48 * 3600 * 1000).toISOString().split('T')[0],
+        items,
+        grand_total: total,
+        currency: 'EGP',
+        notes,
+      });
     } else {
       // In-memory fallback with full telemetry
       const savedOrder = {
@@ -283,6 +302,19 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
       console.log(
         `[Order in Memory Fallback] ${trackingNumber} | IP: ${ip} | Device: ${device.deviceModel} | Risk: ${riskAssessment.riskScore}`
       );
+
+      // Fire-and-forget notification even in memory fallback
+      notifyOrderCreated({
+        tracking_number: trackingNumber,
+        customer_name: customerName,
+        customer_phone: phone,
+        shipping_address: `${address}, ${governorate || 'القاهرة'}`,
+        delivery_date: new Date(Date.now() + 48 * 3600 * 1000).toISOString().split('T')[0],
+        items,
+        grand_total: total,
+        currency: 'EGP',
+        notes,
+      });
     }
 
     res.status(201).json({
@@ -307,92 +339,217 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
   }
 });
 
-// Lookup Order tracking endpoint (Rate limited)
-app.get('/api/orders/:trackingNumber', trackingLimiter, async (req, res) => {
+// =========================================================================
+// Order Status Natural Language Labels (for AI Agent / WhatsApp MCP & UI)
+// =========================================================================
+const ORDER_STATUS_LABELS = {
+  confirmed: {
+    ar: 'تم تأكيد الطلب وجاري تجهيزه بالمستودع المبرد',
+    en: 'Order confirmed & preparing in cold-chain warehouse',
+  },
+  quality_check: {
+    ar: 'فحص الجودة والمطابقة الصيدلانية',
+    en: 'Pharma quality & compliance inspection',
+  },
+  in_transit: {
+    ar: 'في الطريق مع مندوب الشحن السريع',
+    en: 'In transit with express courier',
+  },
+  out_for_delivery: {
+    ar: 'خرج للتسليم مع المندوب اليوم',
+    en: 'Out for delivery with courier today',
+  },
+  delivered: {
+    ar: 'تم التسليم بنجاح والمعاينة قبل الدفع',
+    en: 'Delivered successfully with COD pack inspection',
+  },
+  cancelled: {
+    ar: 'تم إلغاء الطلب',
+    en: 'Order cancelled',
+  },
+};
+
+// =========================================================================
+// Dual Protocol Order Tracking Handler (POST /api/orders/track & GET /api/orders/track)
+//
+// Dual protocol support:
+//   - POST body: { trackingNumber, phone }
+//   - GET query: ?trackingNumber=...&phone=...
+//   - GET param: /api/orders/:trackingNumber?phone=...
+//
+// Security & Architecture:
+//   1. Tracking code flexibility: matches either internal THG-EG-XXXXXX
+//      OR ERP Sales Order code (e.g. SAL-ORD-2026-00001), case-insensitively.
+//   2. Identity verification: phone must match the record's normalized Egyptian phone.
+//   3. Live ERP Refresh: if synced to ERP and order is not terminal, checks ERP
+//      live to ensure status is up to date immediately without waiting for cron.
+//   4. MCP-ready output: outputs rich status labels (ar/en) ready for WhatsApp AI agent.
+//   5. Attack mitigation: rate-limited, ownership mismatch returns 404 to avoid oracle.
+// =========================================================================
+async function handleOrderTrack(req, res) {
   try {
-    const query = req.params.trackingNumber.trim();
-    const pool = getDb();
+    const rawTracking = String(
+      req.body?.trackingNumber ||
+      req.query?.trackingNumber ||
+      req.params?.trackingNumber ||
+      ''
+    ).trim();
 
-    if (pool && isDbConnected()) {
-      // Query MySQL
-      const [rows] = await pool.query(
-        `SELECT id, tracking_number, customer_name, phone, governorate, address, notes, 
-                payment_method, subtotal, discount, shipping, total, status, estimated_delivery, created_at
-         FROM orders 
-         WHERE UPPER(tracking_number) = UPPER(?) 
-            OR phone = ? 
-            OR phone = ?
-         ORDER BY id DESC LIMIT 1`,
-        [query, query, query.replace(/^0/, '+20')]
-      );
+    const rawPhone = String(
+      req.body?.phone ||
+      req.query?.phone ||
+      ''
+    ).trim();
 
-      if (rows.length > 0) {
-        const order = rows[0];
-        const [items] = await pool.query(
-          `SELECT product_id, product_name AS name, quantity AS qty, unit_price AS price, line_total 
-           FROM order_items WHERE order_id = ?`,
-          [order.id]
-        );
-
-        return res.json({
-          trackingNumber: order.tracking_number,
-          customerName: order.customer_name,
-          phone: order.phone,
-          governorate: order.governorate,
-          address: order.address,
-          notes: order.notes,
-          paymentMethod: order.payment_method,
-          subtotal: order.subtotal,
-          discount: order.discount,
-          shipping: order.shipping,
-          total: order.total,
-          status: order.status,
-          estimatedDelivery: order.estimated_delivery,
-          createdAt: order.created_at,
-          items,
-        });
-      }
-    }
-
-    // Check memory fallback
-    const match = memoryOrders.find(
-      (o) =>
-        o.trackingNumber.toUpperCase() === query.toUpperCase() ||
-        o.phone.includes(query)
-    );
-
-    if (match) {
-      return res.json(match);
-    }
-
-    // Default simulated response if query matches format
-    if (query.toUpperCase().startsWith('THG') || query.length >= 8) {
-      return res.json({
-        trackingNumber: query.toUpperCase().startsWith('THG') ? query.toUpperCase() : 'THG-EG-729401',
-        status: 'in_transit',
-        estimatedDelivery: 'غداً مساءً مع مندوب الشحن السريع',
-        items: [
-          { name: 'Pure-3 — أوميجا 3 ألماني عالي النقاوة والتركيز', qty: 1, price: 2000 },
-        ],
-        subtotal: 2000,
-        discount: 0,
-        shipping: 0,
-        total: 2000,
-        customerName: 'عميل THG 4 Pharma',
-        phone: query,
-        governorate: 'القاهرة',
-        address: 'التجمع الخامس، القاهرة الجديدة',
-        paymentMethod: 'الدفع عند الاستلام',
-        createdAt: new Date().toISOString(),
+    if (!rawTracking || !rawPhone) {
+      return res.status(400).json({
+        success: false,
+        error: 'Both trackingNumber and phone are required for order tracking verification.',
+        code: 'MISSING_FIELDS',
       });
     }
 
-    res.status(404).json({ error: 'Order not found' });
+    const phone = normalizePhone(rawPhone);
+    if (!phone) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid Egyptian phone number format. Must be an 11-digit mobile number (e.g. 01XXXXXXXXX).',
+        code: 'INVALID_PHONE',
+      });
+    }
+
+    const pool = getDb();
+
+    if (pool && isDbConnected()) {
+      // 1. Match against either internal tracking number OR ERP external Sales Order ID (case-insensitive)
+      const [rows] = await pool.query(
+        `SELECT id, tracking_number, erp_order_id, customer_name, phone,
+                governorate, payment_method, subtotal, discount, shipping,
+                total, status, estimated_delivery, created_at, erp_synced_at
+         FROM orders
+         WHERE (UPPER(tracking_number) = UPPER(?) OR UPPER(COALESCE(erp_order_id, '')) = UPPER(?))
+         LIMIT 1`,
+        [rawTracking, rawTracking]
+      );
+
+      if (rows.length === 0) {
+        const ip = getClientIp(req);
+        try {
+          await pool.query(
+            `INSERT INTO security_audit_logs
+              (event_type, ip_address, endpoint, user_agent, payload_summary, action_taken)
+             VALUES ('ORDER_NOT_FOUND', ?, '/api/orders/track', ?, ?, 'logged')`,
+            [ip, req.headers['user-agent'] || '', `tracking=${rawTracking}`]
+          );
+        } catch (_) {}
+        return res.status(404).json({ success: false, error: 'Order not found.', code: 'NOT_FOUND' });
+      }
+
+      const order = rows[0];
+
+      // 2. Strict phone ownership verification
+      const storedPhone = normalizePhone(order.phone);
+      if (storedPhone !== phone) {
+        const ip = getClientIp(req);
+        console.warn(`[Security] Tracking ownership mismatch: ${rawTracking} queried with phone ${phone}, stored ${storedPhone} | IP: ${ip}`);
+        try {
+          await pool.query(
+            `INSERT INTO security_audit_logs
+              (event_type, ip_address, endpoint, user_agent, payload_summary, action_taken)
+             VALUES ('TRACKING_OWNERSHIP_VIOLATION', ?, '/api/orders/track', ?, ?, 'blocked')`,
+            [ip, req.headers['user-agent'] || '', `tracking=${rawTracking} phone_mismatch`]
+          );
+        } catch (_) {}
+        // Return 404 to avoid enumeration / phone probing
+        return res.status(404).json({ success: false, error: 'Order not found.', code: 'NOT_FOUND' });
+      }
+
+      // 3. Live ERP Refresh (if linked and not delivered/cancelled)
+      if (order.erp_order_id && !['delivered', 'cancelled'].includes(order.status) && isConfigured()) {
+        try {
+          const liveErp = await getErpOrderStatus(order.erp_order_id);
+          if (liveErp.ok && liveErp.local_status && liveErp.local_status !== order.status) {
+            order.status = liveErp.local_status;
+            pool.query(
+              `UPDATE orders SET status = ?, updated_at = NOW() WHERE id = ?`,
+              [liveErp.local_status, order.id]
+            ).catch(() => {});
+          }
+        } catch (erpErr) {
+          // Non-fatal: fall back to cached database status
+        }
+      }
+
+      // 4. Fetch line items
+      const [items] = await pool.query(
+        `SELECT product_id AS productId, product_name AS name,
+                quantity AS qty, unit_price AS price, line_total AS lineTotal
+         FROM order_items WHERE order_id = ?`,
+        [order.id]
+      );
+
+      const statusLabels = ORDER_STATUS_LABELS[order.status] || {
+        ar: order.status,
+        en: order.status,
+      };
+
+      // 5. Safe, rich response for Frontend & WhatsApp AI Agent MCP
+      return res.json({
+        success:          true,
+        trackingNumber:   order.tracking_number,
+        erpOrderId:       order.erp_order_id || null,
+        status:           order.status,
+        statusLabel_ar:   statusLabels.ar,
+        statusLabel_en:   statusLabels.en,
+        customerName:     order.customer_name,
+        phone:            order.phone,
+        governorate:      order.governorate,
+        paymentMethod:    order.payment_method,
+        subtotal:         order.subtotal,
+        discount:         order.discount,
+        shipping:         order.shipping,
+        total:            order.total,
+        currency:         'EGP',
+        estimatedDelivery: order.estimated_delivery,
+        createdAt:        order.created_at,
+        erpSynced:        !!order.erp_synced_at,
+        items,
+      });
+    }
+
+    // In-memory fallback (if DB is temporarily disconnected)
+    const match = memoryOrders.find(
+      (o) =>
+        (o.trackingNumber.toUpperCase() === rawTracking.toUpperCase() ||
+         (o.erpOrderId && o.erpOrderId.toUpperCase() === rawTracking.toUpperCase())) &&
+        normalizePhone(o.phone) === phone
+    );
+
+    if (match) {
+      const statusLabels = ORDER_STATUS_LABELS[match.status] || {
+        ar: match.status,
+        en: match.status,
+      };
+      return res.json({
+        success: true,
+        ...match,
+        statusLabel_ar: statusLabels.ar,
+        statusLabel_en: statusLabels.en,
+        currency: 'EGP',
+      });
+    }
+
+    return res.status(404).json({ success: false, error: 'Order not found.', code: 'NOT_FOUND' });
   } catch (error) {
-    console.error('[Error Looking Up Order]:', error);
-    res.status(500).json({ error: 'Lookup failed', details: error.message });
+    console.error('[Error Tracking Order]:', error);
+    res.status(500).json({ success: false, error: 'Tracking lookup failed.', code: 'SERVER_ERROR' });
   }
-});
+}
+
+// Register tracking endpoints across both POST & GET methods
+app.post('/api/orders/track', trackingLimiter, handleOrderTrack);
+app.get('/api/orders/track', trackingLimiter, handleOrderTrack);
+app.get('/api/orders/:trackingNumber', trackingLimiter, handleOrderTrack);
 
 // Restock Interest endpoint with telemetry
 app.post('/api/restock-interest', restockLimiter, async (req, res) => {
@@ -427,6 +584,9 @@ app.post('/api/restock-interest', restockLimiter, async (req, res) => {
 // Initialize database connection and start listening on port 8877
 async function startServer() {
   await initDb();
+
+  // Start ERP background sync after DB is ready
+  startErpSync();
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`====================================================`);
