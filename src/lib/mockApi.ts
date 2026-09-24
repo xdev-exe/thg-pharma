@@ -142,16 +142,20 @@ export const mockApi = {
     };
   },
 
-  // Lookup Order
-  async getOrder(query: string): Promise<SavedOrder | null> {
-    const cleanQuery = query.trim();
+  // Lookup Order — requires tracking number AND phone for ownership verification
+  async getOrder(trackingNumber: string, phone: string): Promise<SavedOrder | null> {
+    const cleanTracking = trackingNumber.trim();
+    const cleanPhone    = phone.trim();
 
     try {
       // Try backend first
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
 
-      const response = await fetch(`${API_BASE_URL}/orders/${encodeURIComponent(cleanQuery)}`, {
+      const response = await fetch(`${API_BASE_URL}/orders/track`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ trackingNumber: cleanTracking, phone: cleanPhone }),
         signal: controller.signal,
       });
 
@@ -161,44 +165,25 @@ export const mockApi = {
         const data = await response.json();
         return data;
       }
+
+      // 404 = not found or ownership mismatch — surface as null
+      if (response.status === 404) return null;
     } catch (err) {
       console.warn('[API] Backend lookup unreachable, checking local storage:', (err as Error).message);
     }
 
-    // Check localStorage fallback
+    // Check localStorage fallback (orders placed while offline)
     try {
       const existingRaw = localStorage.getItem(ORDERS_KEY);
       const existing: SavedOrder[] = existingRaw ? JSON.parse(existingRaw) : [];
 
       const match = existing.find(
         (o) =>
-          o.trackingNumber.toUpperCase() === cleanQuery.toUpperCase() ||
-          o.phone.replace(/\s+/g, '').includes(cleanQuery.replace(/\s+/g, ''))
+          o.trackingNumber.toUpperCase() === cleanTracking.toUpperCase() &&
+          o.phone.replace(/\s+/g, '') === cleanPhone.replace(/\s+/g, '')
       );
 
       if (match) return match;
-
-      // Simulated realistic test result
-      if (cleanQuery.toUpperCase().startsWith('THG') || cleanQuery.length >= 8) {
-        return {
-          trackingNumber: cleanQuery.toUpperCase().startsWith('THG') ? cleanQuery.toUpperCase() : 'THG-EG-729401',
-          status: 'in_transit',
-          estimatedDelivery: 'غداً مساءً مع مندوب الشحن السريع',
-          items: [
-            { name: 'Pure-3 — أوميجا 3 ألماني عالي النقاوة والتركيز', qty: 1, price: 2000 },
-            { name: 'Iron DIRECT — حديد مباشر ميكروبيليتس بطعم التوت البري', qty: 1, price: 2000 },
-          ],
-          subtotal: 4000,
-          shipping: 0,
-          total: 4000,
-          customerName: 'عميل THG 4 Pharma المميز',
-          phone: cleanQuery,
-          governorate: 'القاهرة / التجمع الخامس',
-          address: 'شارع التسعين الشمالي',
-          paymentMethod: 'الدفع عند الاستلام',
-          createdAt: new Date(Date.now() - 18 * 3600 * 1000).toISOString(),
-        };
-      }
     } catch (e) {
       console.error('Error querying local order', e);
     }

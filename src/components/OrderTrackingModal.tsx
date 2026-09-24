@@ -16,7 +16,8 @@ import {
 
 export const OrderTrackingModal: React.FC = () => {
   const { activeModal, closeModal, lang, t } = useApp();
-  const [query, setQuery] = useState('');
+  const [trackingInput, setTrackingInput] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [order, setOrder] = useState<SavedOrder | null>(null);
   const [error, setError] = useState('');
@@ -25,21 +26,30 @@ export const OrderTrackingModal: React.FC = () => {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    const tracking = trackingInput.trim();
+    const phone    = phoneInput.trim();
+
+    if (!tracking || !phone) {
+      setError(t(
+        'من فضلك ادخل رقم التتبع ورقم الموبايل معاً للتحقق من هويتك.',
+        'Please enter both your tracking number and phone number to verify your identity.'
+      ));
+      return;
+    }
 
     setLoading(true);
     setError('');
     setOrder(null);
 
     try {
-      const res = await mockApi.getOrder(query);
+      const res = await mockApi.getOrder(tracking, phone);
       if (res) {
         setOrder(res);
       } else {
         setError(
           t(
-            'لم يتم العثور على طلب بهذا الرقم أو الهاتف. يرجى التأكد من الرقم والمحاولة مجدداً.',
-            'No order found with this tracking code or phone number. Please check and retry.'
+            'لم يتم العثور على طلب بهذه البيانات. تأكد من رقم التتبع ورقم الموبايل المسجل.',
+            'No order found with these details. Please check your tracking number and registered phone number.'
           )
         );
       }
@@ -102,7 +112,7 @@ export const OrderTrackingModal: React.FC = () => {
                 {t('شحنتك فين دلوقتي؟ تتبع طلبك في ثواني', 'Track THG 4 Pharma Delivery')}
               </h3>
               <p className="text-xs text-slate-300">
-                {t('اكتب رقم تتبع شحنتك (زي THG-EG-XXXXXX) أو رقم الموبايل اللي سجلت بيه', 'Enter tracking code or your mobile number')}
+                {t('ادخل رقم التتبع ورقم موبايلك للتحقق من هويتك وعرض بيانات طلبك', 'Enter your tracking number and registered phone to verify and view your order')}
               </p>
             </div>
           </div>
@@ -118,15 +128,25 @@ export const OrderTrackingModal: React.FC = () => {
         {/* Body */}
         <div className="p-6 overflow-y-auto flex-1 space-y-6 text-slate-800">
           {/* Search Form */}
-          <form onSubmit={handleSearch} className="space-y-2">
+          <form onSubmit={handleSearch} className="space-y-3">
+            <div className="relative">
+              <Search size={18} className="absolute top-3.5 right-3.5 rtl:right-3.5 rtl:left-auto ltr:left-3.5 ltr:right-auto text-slate-400" />
+              <input
+                type="text"
+                value={trackingInput}
+                onChange={(e) => setTrackingInput(e.target.value)}
+                placeholder={t('رقم التتبع (مثال: THG-EG-123456)', 'Tracking number (e.g. THG-EG-123456)')}
+                className="w-full bg-slate-50 border border-slate-300 rounded-2xl pr-10 rtl:pr-10 rtl:pl-3 ltr:pl-10 ltr:pr-3 py-3 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#C8102E]"
+              />
+            </div>
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Search size={18} className="absolute top-3.5 right-3.5 rtl:right-3.5 rtl:left-auto ltr:left-3.5 ltr:right-auto text-slate-400" />
+                <PhoneCall size={18} className="absolute top-3.5 right-3.5 rtl:right-3.5 rtl:left-auto ltr:left-3.5 ltr:right-auto text-slate-400" />
                 <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={t('اكتب رقم التتبع أو رقم موبايلك هنا...', 'Enter tracking code or mobile number...')}
+                  type="tel"
+                  value={phoneInput}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  placeholder={t('رقم موبايلك المسجل (مثال: 01XXXXXXXXX)', 'Registered phone (e.g. 01XXXXXXXXX)')}
                   className="w-full bg-slate-50 border border-slate-300 rounded-2xl pr-10 rtl:pr-10 rtl:pl-3 ltr:pl-10 ltr:pr-3 py-3 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#C8102E]"
                 />
               </div>
