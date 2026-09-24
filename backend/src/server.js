@@ -265,11 +265,11 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
       const [orderResult] = await pool.query(
         `INSERT INTO orders 
         (tracking_number, customer_name, phone, whatsapp_phone, governorate, address, notes, payment_method, 
-         subtotal, discount, shipping, total, estimated_delivery, status,
+         subtotal, discount, shipping, total, status, estimated_delivery,
          erp_order_id, erp_synced_at, erp_sync_error,
          ip_address, user_agent, device_type, device_model, os_name, os_version,
          browser_name, browser_version, client_language, referrer, risk_score, is_suspicious, risk_flags, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
         [
           trackingNumber,
           customerName.trim(),
@@ -283,6 +283,7 @@ app.post('/api/orders', orderCreationLimiter, async (req, res) => {
           discount,
           shipping,
           total,
+          'confirmed',
           estimatedDelivery,
           erpOrderId,
           erpSynced ? new Date() : null,
