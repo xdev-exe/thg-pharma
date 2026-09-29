@@ -172,6 +172,22 @@ function generateProductHtml(product, targetUrl) {
 
 let generatedCount = 0;
 
+// Generate static shell pages for SPA routes that have no prerendered file.
+// Without these, Vercel's cleanUrls setting 404s before rewrites can run.
+const spaRoutes = [
+  { dir: path.join(distDir, 'cart'), url: `${BASE_URL}/cart` },
+  { dir: path.join(distDir, 'checkout'), url: `${BASE_URL}/checkout` },
+];
+
+for (const { dir, url } of spaRoutes) {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  // Just copy the SPA shell — React Router handles the actual content
+  fs.writeFileSync(path.join(dir, 'index.html'), templateHtml, 'utf8');
+  generatedCount++;
+}
+
 for (const product of products) {
   // URLs to generate:
   // 1. /product/:id (e.g. /product/pure-3)
