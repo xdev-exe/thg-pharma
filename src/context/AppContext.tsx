@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Language, Product, CartItem, ModalType, ProductCategory } from '../types';
 import { PRODUCTS } from '../data/products';
 
@@ -56,6 +57,7 @@ const CART_STORAGE_KEY = 'thg_cart_v1';
 const LANG_STORAGE_KEY = 'thg_lang_v1';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const navigate = useNavigate();
   // Language (default to Arabic for Egypt)
   const [lang, setLangState] = useState<Language>(() => {
     const saved = localStorage.getItem(LANG_STORAGE_KEY);
@@ -98,7 +100,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const openModal = (type: ModalType) => setActiveModal(type);
+  const openModal = (type: ModalType) => {
+    if (type === 'cart') {
+      navigate('/cart');
+      return;
+    }
+    if (type === 'checkout') {
+      navigate('/checkout');
+      return;
+    }
+    setActiveModal(type);
+  };
   const closeModal = () => {
     setActiveModal(null);
   };

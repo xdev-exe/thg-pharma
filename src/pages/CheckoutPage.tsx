@@ -1,0 +1,519 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
+import { EGYPT_GOVERNORATES } from '../data/governorates';
+import { formatEGP, isValidEgyptianPhone, normalizeEgyptianPhone } from '../lib/utils';
+import { mockApi } from '../lib/mockApi';
+import confetti from 'canvas-confetti';
+import {
+  ShieldCheck,
+  Truck,
+  CheckCircle2,
+  AlertCircle,
+  Copy,
+  Loader2,
+  PackageCheck,
+} from 'lucide-react';
+
+export const CheckoutPage: React.FC = () => {
+  const {
+    cart,
+    subtotal,
+    discount,
+    total,
+    clearCart,
+    lang,
+    t,
+    openModal,
+  } = useApp();
+
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    whatsappPhone: '',
+    governorate: 'cairo',
+    address: '',
+    notes: '',
+  });
+
+  const [sameAsCallPhone, setSameAsCallPhone] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'card_delivery'>('cod');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderCompleted, setOrderCompleted] = useState<any | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [copiedTracking, setCopiedTracking] = useState(false);
+
+  // Redirect to cart if cart is empty and order not yet completed
+  if (cart.length === 0 && !orderCompleted) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center px-4">
+        <div className="text-center space-y-4 max-w-sm">
+          <div className="w-16 h-16 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+            <PackageCheck size={32} />
+          </div>
+          <h2 className="font-bold text-slate-800 text-lg">
+            {t('سلتك فاضية', 'Your bag is empty')}
+          </h2>
+          <p className="text-sm text-slate-500">
+            {t('لازم تضيف منتجات في سلتك الأول.', 'You need to add products to your bag first.')}
+          </p>
+          <button
+            onClick={() => navigate('/cart')}
+            className="px-6 py-3 bg-[#C8102E] hover:bg-[#9B0D24] text-white font-bold text-sm rounded-full transition-all cursor-pointer"
+          >
+            {t('روح للسلة', 'Go to Cart')}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedGov = EGYPT_GOVERNORATES.find((g) => g.id === formData.governorate) || EGYPT_GOVERNORATES[0];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+
+    if (!formData.name.trim()) {
+      setErrorMessage(t('يرجى إدخال اسم المستلم بالكامل', 'Please enter full recipient name'));
+      return;
+    }
+
+    if (!isValidEgyptianPhone(formData.phone)) {
+      setErrorMessage(
+        t(
+          'يرجى إدخال رقم هاتف اتصال مصري صحيح يبدأ بـ 010 أو 011 أو 012 أو 015',
+          'Please enter a valid Egyptian mobile number for calls (010, 011, 012, 015)'
+        )
+      );
+      return;
+    }
+
+    const whatsappValue = sameAsCallPhone ? formData.phone : formData.whatsappPhone;
+    if (!isValidEgyptianPhone(whatsappValue)) {
+      setErrorMessage(
+        t(
+          'يرجى إدخال رقم واتساب مصري صحيح للتواصل ومتابعة الشحنة (يمكنك وضع نفس رقم المكالمات)',
+          'Please enter a valid Egyptian WhatsApp number (can be identical to call number)'
+        )
+      );
+      return;
+    }
+
+    if (!formData.address.trim() || formData.address.trim().length < 8) {
+      setErrorMessage(
+        t('يرجى كتابة العنوان التفصيلي (المنطقة، الشارع، رقم العمارة)', 'Please provide full detailed delivery address')
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const normalizedPhone = normalizeEgyptianPhone(formData.phone);
+      const normalizedWhatsapp = normalizeEgyptianPhone(whatsappValue);
+      const res = await mockApi.createOrder(
+        {
+          ...formData,
+          phone: normalizedPhone,
+          whatsappPhone: normalizedWhatsapp,
+          governorate: lang === 'ar' ? selectedGov.name_ar : selectedGov.name_en,
+        },
+        cart,
+        subtotal,
+        0,
+        total
+      );
+
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#C8102E', '#0A1628', '#D4A843'],
+      });
+
+      setOrderCompleted(res);
+      clearCart();
+    } catch {
+      setErrorMessage(t('حدث خطأ أثناء تأكيد الطلب، يرجى المحاولة مجدداً', 'Error placing order, please try again'));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedTracking(true);
+    setTimeout(() => setCopiedTracking(false), 2500);
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Page Header */}
+        <div className="bg-[#0A1628] text-white rounded-3xl p-6 mb-6 flex items-center gap-3">
+          <div className="p-2.5 bg-[#C8102E] rounded-xl text-white shrink-0">
+            <PackageCheck size={22} />
+          </div>
+          <div>
+            <h1 className="text-lg font-black leading-tight">
+              {orderCompleted
+                ? t('ألف مبروك! طلبك اتأكد وبقى في أيدي أمينة 🎉', 'Order Confirmed Successfully 🎉')
+                : t('خطوة بسيطة وطلبك يوصلك لحد باب بيتك 🚚', 'Checkout — Free Nationwide Express')}
+            </h1>
+            <p className="text-xs text-slate-300 mt-0.5">
+              {orderCompleted
+                ? t('مندوب THG 4 Pharma هيتواصل معاك تليفونياً لترتيب وقت التسليم اللي يناسبك', 'THG dispatch will call you shortly to arrange delivery at your convenience')
+                : t('شحن مجاني لكل محافظات مصر • الدفع عند الاستلام بعد ما تفتح وتطمن', 'Free shipping across Egypt • Pay upon inspecting your sealed box')}
+            </p>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+          {orderCompleted ? (
+            /* Order Success View */
+            <div className="py-6 text-center space-y-6 animate-fade-in">
+              <div className="w-16 h-16 mx-auto rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <CheckCircle2 size={38} />
+              </div>
+
+              <div>
+                <h4 className="text-xl sm:text-2xl font-black text-slate-900">
+                  {t('شكراً لثقتك في عيلة THG 4 Pharma ❤️', 'Thank You for Trusting THG 4 Pharma')}
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1.5 max-w-md mx-auto leading-relaxed">
+                  {t(
+                    'طلبك اتسجل وبنجهزهولك حالياً من مستودعات التبريد الصيدلي بكل عناية. مندوب الشحن هيكلمك قبل ما يوصلك علشان يرتب معاك الميعاد اللي يريحك.',
+                    'Your order is safely registered and being prepared with care in our pharmaceutical cold custody. Our courier will call you before arrival.'
+                  )}
+                </p>
+              </div>
+
+              {/* Tracking Code Box */}
+              <div className="bg-slate-50 border-2 border-dashed border-slate-300 p-4 rounded-2xl max-w-sm mx-auto space-y-2">
+                <div className="text-[11px] font-bold text-slate-500 uppercase">
+                  {t('رقم تتبع شحنتك الخاص', 'Your Tracking Reference')}
+                </div>
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-xl sm:text-2xl font-black tracking-wider text-[#C8102E]">
+                    {orderCompleted.trackingNumber}
+                  </span>
+                  <button
+                    onClick={() => copyToClipboard(orderCompleted.trackingNumber)}
+                    className="p-1.5 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                    title={t('نسخ رقم التتبع', 'Copy tracking number')}
+                  >
+                    <Copy size={16} />
+                  </button>
+                </div>
+                {copiedTracking && (
+                  <span className="text-xs text-emerald-600 font-bold block animate-fade-in">
+                    {t('تم نسخ الرقم بنجاح!', 'Copied to clipboard!')}
+                  </span>
+                )}
+              </div>
+
+              {/* Delivery Window */}
+              <div className="bg-blue-50 border border-blue-200 p-3.5 rounded-2xl max-w-md mx-auto text-xs text-blue-900 space-y-1">
+                <div className="font-bold flex items-center justify-center gap-1.5">
+                  <Truck size={16} className="text-blue-700" />
+                  <span>{t('الميعاد المتوقع لوصول المندوب:', 'Estimated Delivery Window:')}</span>
+                </div>
+                <div>{orderCompleted.estimatedDelivery}</div>
+                <div className="text-blue-700 font-medium pt-1 border-t border-blue-200/60">
+                  {t('المطلوب سداده للمندوب عند الاستلام:', 'Total Due at Delivery:')}{' '}
+                  <span className="font-extrabold text-sm">{formatEGP(orderCompleted.total, lang)}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <button
+                  onClick={() => openModal('tracking')}
+                  className="w-full sm:w-auto px-6 py-3 bg-[#0A1628] hover:bg-slate-800 text-white font-bold text-xs rounded-full transition-all cursor-pointer"
+                >
+                  {t('تتبع شحنتك من هنا', 'Track Delivery Progress')}
+                </button>
+                <button
+                  onClick={() => navigate('/')}
+                  className="w-full sm:w-auto px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-full transition-all cursor-pointer"
+                >
+                  {t('ارجع للمتجر', 'Back to Store')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Checkout Form */
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {errorMessage && (
+                <div className="bg-red-50 border border-red-200 text-red-700 text-xs p-3 rounded-xl flex items-center gap-2">
+                  <AlertCircle size={16} className="shrink-0 text-[#C8102E]" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
+              {/* Customer Info */}
+              <div className="space-y-4">
+                <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                  {t('بيانات التوصيل (مصر)', 'Delivery Details (Egypt)')}
+                </h4>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      {t('الاسم بالكامل (عشان المندوب يعرفك) *', 'Full Name *')}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder={t('مثال: د. أحمد الشناوي', 'e.g., Ahmed El-Shenawy')}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#C8102E] text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                      <span>{t('رقم الموبايل للمكالمات *', 'Call Mobile Number *')}</span>
+                      <span className="text-[10px] text-slate-400 font-normal">{t('للتنسيق الهاتفي', 'For phone call')}</span>
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={formData.phone}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setFormData((prev) => ({
+                          ...prev,
+                          phone: val,
+                          whatsappPhone: sameAsCallPhone ? val : prev.whatsappPhone,
+                        }));
+                      }}
+                      placeholder="010XXXXXXXX"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#C8102E] text-slate-900"
+                    />
+                  </div>
+                </div>
+
+                {/* WhatsApp Phone */}
+                <div className="space-y-1.5 bg-slate-50/80 p-3 rounded-2xl border border-slate-200">
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block shrink-0" />
+                      <span>{t('رقم الواتساب (للتتبع والمتابعة الفورية) *', 'WhatsApp Number (for live tracking & updates) *')}</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer select-none font-medium">
+                      <input
+                        type="checkbox"
+                        checked={sameAsCallPhone}
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          setSameAsCallPhone(checked);
+                          if (checked) {
+                            setFormData((prev) => ({ ...prev, whatsappPhone: prev.phone }));
+                          }
+                        }}
+                        className="w-3.5 h-3.5 text-[#C8102E] rounded border-slate-300 focus:ring-[#C8102E] accent-[#C8102E] cursor-pointer"
+                      />
+                      <span>{t('نفس رقم المكالمات', 'Same as call number')}</span>
+                    </label>
+                  </div>
+                  <input
+                    type="tel"
+                    required
+                    value={sameAsCallPhone ? formData.phone : formData.whatsappPhone}
+                    disabled={sameAsCallPhone}
+                    onChange={(e) => setFormData({ ...formData, whatsappPhone: e.target.value })}
+                    placeholder="01XXXXXXXXX"
+                    className={`w-full border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#C8102E] ${
+                      sameAsCallPhone ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed' : 'bg-white text-slate-900 border-slate-300'
+                    }`}
+                  />
+                  <p className="text-[10px] text-slate-500">
+                    {t(
+                      'مطلوب إدخال رقمين لتأكيد الطلب: رقم للمكالمات ورقم للواتساب (يمكن إدخال نفس الرقم مرتين أو تفعيل الخيار أعلاه).',
+                      'Two numbers required: one for phone calls and one for WhatsApp (can be identical numbers).'
+                    )}
+                  </p>
+                </div>
+
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      {t('المحافظة (شحن مجاني لكل مصر) *', 'Governorate (Free Shipping) *')}
+                    </label>
+                    <select
+                      value={formData.governorate}
+                      onChange={(e) => setFormData({ ...formData, governorate: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#C8102E] text-slate-900 cursor-pointer"
+                    >
+                      {EGYPT_GOVERNORATES.map((gov) => (
+                        <option key={gov.id} value={gov.id}>
+                          {lang === 'ar' ? gov.name_ar : gov.name_en} ({t(gov.deliveryDays_ar, gov.deliveryDays_en)})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      {t('الميعاد المتوقع لوصول الطلب', 'Estimated Delivery')}
+                    </label>
+                    <div className="w-full bg-slate-100 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-700 font-bold flex items-center gap-1.5">
+                      <Truck size={14} className="text-[#C8102E]" />
+                      <span>{t(selectedGov.deliveryDays_ar, selectedGov.deliveryDays_en)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {t('العنوان بالتفصيل (المنطقة، الشارع، رقم العمارة والشقة) *', 'Detailed Address (Area, Street, Building & Apt) *')}
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    placeholder={t('مثال: المعادي، شارع النصر، عمارة 14، الدور الثالث شقة 5', 'e.g. Maadi, El-Nasr St, Building 14')}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#C8102E] text-slate-900"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {t('أي ملاحظة تحب تقولها لمندوب الشحن؟ (اختياري)', 'Notes for courier (Optional)')}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.notes}
+                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                    placeholder={t('مثال: رن عليا قبل ما توصل بساعة', 'e.g. Please call 1 hour before arrival')}
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[#C8102E] text-slate-900"
+                  />
+                </div>
+              </div>
+
+              {/* Payment Method */}
+              <div className="space-y-3 pt-2 border-t border-slate-200">
+                <h4 className="text-xs font-black text-slate-900 uppercase tracking-wider">
+                  {t('طريقة الدفع اللي تريحك عند الاستلام', 'Payment Method')}
+                </h4>
+
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <label
+                    onClick={() => setPaymentMethod('cod')}
+                    className={`flex items-start gap-3 p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${
+                      paymentMethod === 'cod'
+                        ? 'border-[#C8102E] bg-red-50/50'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment"
+                      checked={paymentMethod === 'cod'}
+                      onChange={() => setPaymentMethod('cod')}
+                      className="mt-1 text-[#C8102E] focus:ring-[#C8102E]"
+                    />
+                    <div>
+                      <div className="font-black text-xs sm:text-sm text-slate-900">
+                        {t('كاش عند الاستلام (COD)', 'Cash on Delivery (COD)')}
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                        {t('افتح علبتك الألمانية واتأكد بنفسك إنها سليمة ومختومة، وبعدها ادفع براحتك', 'Inspect your sealed German pack before paying')}
+                      </div>
+                    </div>
+                  </label>
+
+                  <label
+                    onClick={() => setPaymentMethod('card_delivery')}
+                    className={`flex items-start gap-3 p-3.5 rounded-2xl border-2 transition-all cursor-pointer ${
+                      paymentMethod === 'card_delivery'
+                        ? 'border-[#C8102E] bg-red-50/50'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="payment"
+                      checked={paymentMethod === 'card_delivery'}
+                      onChange={() => setPaymentMethod('card_delivery')}
+                      className="mt-1 text-[#C8102E] focus:ring-[#C8102E]"
+                    />
+                    <div>
+                      <div className="font-black text-xs sm:text-sm text-slate-900">
+                        {t('كارت مع المندوب (POS)', 'Card on Delivery (POS)')}
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                        {t('المندوب معاه ماكينة دفع إلكتروني تقدر تدفع بيها بالفيزا أو ميزة', 'Courier carries a mobile POS terminal for card payments')}
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Order Summary */}
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 text-xs">
+                <div className="font-bold text-slate-900 mb-1 flex items-center justify-between">
+                  <span>{t('ملخص طلبك', 'Order Summary')}</span>
+                  <span>({cart.length} {t('مكملات', 'items')})</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>{t('المجموع الفرعي', 'Subtotal')}</span>
+                  <span>{formatEGP(subtotal, lang)}</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex justify-between text-[#C8102E] font-bold">
+                    <span>{t('الخصم المطبق', 'Discount')}</span>
+                    <span>-{formatEGP(discount, lang)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-emerald-700 font-bold">
+                  <span>{t('مصاريف الشحن والتوصيل', 'Shipping')}</span>
+                  <span>{t('مجاني بالكامل (0 ج.م)', 'FREE (0 EGP)')}</span>
+                </div>
+                <div className="pt-2 border-t border-slate-200 flex justify-between text-sm sm:text-base font-black text-slate-900">
+                  <span>{t('المبلغ النهائي المطلوب دفعه عند الاستلام', 'Total Due at Delivery')}</span>
+                  <span className="text-[#C8102E]">{formatEGP(total, lang)}</span>
+                </div>
+              </div>
+
+              {/* Submit CTA */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full py-4 bg-[#C8102E] hover:bg-[#9B0D24] text-white font-black text-sm rounded-2xl shadow-lg shadow-red-900/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 active:scale-95"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    <span>{t('بنجهز ونأكد طلبك حالا...', 'Confirming Order & Reserving Pack...')}</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck size={18} />
+                    <span>{t(`أكّد طلبي دلوقتي (${formatEGP(total, lang)})`, `Confirm Order Now (${formatEGP(total, lang)})`)}</span>
+                  </>
+                )}
+              </button>
+
+              {/* Back to cart */}
+              <button
+                type="button"
+                onClick={() => navigate('/cart')}
+                className="w-full py-3 text-slate-600 hover:text-slate-900 font-medium text-xs transition-colors cursor-pointer"
+              >
+                {t('← ارجع للسلة', '← Back to Cart')}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
