@@ -61,7 +61,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Language (default to Arabic for Egypt)
   const [lang, setLangState] = useState<Language>(() => {
     const saved = localStorage.getItem(LANG_STORAGE_KEY);
-    return saved === 'en' ? 'en' : 'ar';
+    return saved === 'ar' ? 'ar' : 'en';
   });
 
   const setLang = (l: Language) => {
