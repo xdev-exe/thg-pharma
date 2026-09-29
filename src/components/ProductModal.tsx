@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 import { formatEGP } from '../lib/utils';
+import { pixelViewContent } from '../lib/pixel';
 import {
   X,
   ShieldCheck,
@@ -20,6 +21,17 @@ export const ProductModal: React.FC = () => {
   const { activeModal, closeModal, selectedProduct, lang, t, addToCart, buyNow, openRestockAlert } = useApp();
   const [activeTab, setActiveTab] = useState<'formula' | 'usage' | 'faqs'>('formula');
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
+
+  // Fire ViewContent whenever a product modal opens
+  useEffect(() => {
+    if (activeModal === 'product' && selectedProduct) {
+      pixelViewContent({
+        content_ids: [selectedProduct.id],
+        content_name: selectedProduct.name_en,
+        value: selectedProduct.price,
+      });
+    }
+  }, [activeModal, selectedProduct?.id]);
 
   if (activeModal !== 'product' || !selectedProduct) return null;
 

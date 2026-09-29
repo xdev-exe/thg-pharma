@@ -26,7 +26,7 @@
 
 
 
-  <!-- Meta Pixel Code -->
+  <!-- Meta Pixel Code — ID managed via vite.config.ts (__META_PIXEL_ID__) -->
   <script>
     !function (f, b, e, v, n, t, s) {
       if (f.fbq) return; n = f.fbq = function () {
@@ -39,8 +39,7 @@
       s.parentNode.insertBefore(t, s)
     }(window, document, 'script',
       'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '2145574049372443');
-    fbq('track', 'PageView');
+    // fbq init + PageView are called from src/lib/pixel.ts via pixelInit() in main.tsx
   </script>
   <!-- End Meta Pixel Code -->
 

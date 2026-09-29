@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { EGYPT_GOVERNORATES } from '../data/governorates';
 import { formatEGP, isValidEgyptianPhone, normalizeEgyptianPhone } from '../lib/utils';
 import { mockApi } from '../lib/mockApi';
+import { pixelInitiateCheckout, pixelPurchase } from '../lib/pixel';
 import confetti from 'canvas-confetti';
 import {
   ShieldCheck,
@@ -18,6 +19,7 @@ import {
 export const CheckoutPage: React.FC = () => {
   const {
     cart,
+    cartCount,
     subtotal,
     discount,
     total,
@@ -44,6 +46,18 @@ export const CheckoutPage: React.FC = () => {
   const [orderCompleted, setOrderCompleted] = useState<any | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [copiedTracking, setCopiedTracking] = useState(false);
+
+  // Fire InitiateCheckout once on mount (cart must be non-empty to reach here)
+  useEffect(() => {
+    if (cart.length > 0) {
+      pixelInitiateCheckout({
+        content_ids: cart.map((item) => item.product.id),
+        num_items: cartCount,
+        value: total,
+      });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Redirect to cart if cart is empty and order not yet completed
   if (cart.length === 0 && !orderCompleted) {
@@ -132,6 +146,14 @@ export const CheckoutPage: React.FC = () => {
         spread: 70,
         origin: { y: 0.6 },
         colors: ['#C8102E', '#0A1628', '#D4A843'],
+      });
+
+      // Fire Purchase before clearCart so cart data is still available
+      pixelPurchase({
+        content_ids: cart.map((item) => item.product.id),
+        num_items: cartCount,
+        value: res.total,
+        order_id: res.trackingNumber,
       });
 
       setOrderCompleted(res);

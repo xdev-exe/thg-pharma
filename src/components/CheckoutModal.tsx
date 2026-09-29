@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { EGYPT_GOVERNORATES } from '../data/governorates';
 import { formatEGP, isValidEgyptianPhone, normalizeEgyptianPhone } from '../lib/utils';
 import { mockApi } from '../lib/mockApi';
+import { pixelPurchase } from '../lib/pixel';
 import confetti from 'canvas-confetti';
 import {
   X,
@@ -20,6 +21,7 @@ export const CheckoutModal: React.FC = () => {
     activeModal,
     closeModal,
     cart,
+    cartCount,
     subtotal,
     discount,
     total,
@@ -110,6 +112,14 @@ export const CheckoutModal: React.FC = () => {
         spread: 70,
         origin: { y: 0.6 },
         colors: ['#C8102E', '#0A1628', '#D4A843'],
+      });
+
+      // Fire Purchase before clearCart so cart data is still available
+      pixelPurchase({
+        content_ids: cart.map((item) => item.product.id),
+        num_items: cartCount,
+        value: res.total,
+        order_id: res.trackingNumber,
       });
 
       setOrderCompleted(res);

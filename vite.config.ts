@@ -8,4 +8,9 @@ export default defineConfig({
     port: 3000,
     open: true,
   },
+  define: {
+    __META_PIXEL_ID__: JSON.stringify(
+      process.env.VITE_META_PIXEL_ID ?? '2145574049372443'
+    ),
+  },
 });

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { mockApi } from '../lib/mockApi';
+import { pixelLead } from '../lib/pixel';
 import {
   X,
   BellRing,
@@ -28,6 +29,7 @@ export const RestockModal: React.FC = () => {
     setLoading(true);
     try {
       await mockApi.subscribeRestock(product.id, contact.trim());
+      pixelLead({ content_name: product.name_en });
       setSubmitted(true);
     } catch (err) {
       console.error(err);

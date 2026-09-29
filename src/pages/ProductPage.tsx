@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { PRODUCTS } from '../data/products';
 import { useApp } from '../context/AppContext';
 import { formatEGP } from '../lib/utils';
 import { useSEO } from '../hooks/useSEO';
+import { pixelViewContent } from '../lib/pixel';
 import {
   ShieldCheck,
   ShoppingBag,
@@ -44,6 +45,17 @@ export const ProductPage: React.FC = () => {
 
   // Apply dynamic SEO and Schema.org
   useSEO({ product, lang });
+
+  // Fire ViewContent whenever the product changes (including first load)
+  useEffect(() => {
+    if (product) {
+      pixelViewContent({
+        content_ids: [product.id],
+        content_name: product.name_en,
+        value: product.price,
+      });
+    }
+  }, [product?.id]);
 
   const BackIcon = lang === 'ar' ? ArrowRight : ArrowLeft;
 

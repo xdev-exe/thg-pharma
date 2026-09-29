@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Language, Product, CartItem, ModalType, ProductCategory } from '../types';
 import { PRODUCTS } from '../data/products';
+import { pixelAddToCart, pixelInitiateCheckout } from '../lib/pixel';
 
 interface Toast {
   id: string;
@@ -162,6 +163,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'success'
     );
 
+    pixelAddToCart({
+      content_id: product.id,
+      content_name: product.name_en,
+      value: product.price,
+    });
+
     if (autoOpenCart) {
       openModal('cart');
     }
@@ -183,6 +190,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         );
       }
       return [...prev, { product, quantity }];
+    });
+
+    pixelAddToCart({
+      content_id: product.id,
+      content_name: product.name_en,
+      value: product.price,
+    });
+
+    pixelInitiateCheckout({
+      content_ids: [product.id],
+      num_items: quantity,
+      value: product.price * quantity,
     });
 
     openModal('checkout');

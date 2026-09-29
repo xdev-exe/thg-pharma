@@ -15,6 +15,7 @@ import { RoutineQuizModal } from './components/RoutineQuizModal';
 import { RestockModal } from './components/RestockModal';
 import { WhatsAppButton } from './components/WhatsAppButton';
 import { CheckCircle, AlertCircle, Info } from 'lucide-react';
+import { pixelPageView } from './lib/pixel';
 
 const ScrollToTop: React.FC = () => {
   const { pathname, hash } = useLocation();
@@ -22,6 +23,7 @@ const ScrollToTop: React.FC = () => {
   useEffect(() => {
     if (!hash) {
       window.scrollTo(0, 0);
+      pixelPageView();
     }
   }, [pathname, hash]);
 

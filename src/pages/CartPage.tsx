@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { formatEGP } from '../lib/utils';
+import { pixelInitiateCheckout } from '../lib/pixel';
 import {
   ShoppingBag,
   Trash2,
@@ -224,7 +225,14 @@ export const CartPage: React.FC = () => {
 
             {/* Checkout CTA */}
             <button
-              onClick={() => navigate('/checkout')}
+              onClick={() => {
+                pixelInitiateCheckout({
+                  content_ids: cart.map((item) => item.product.id),
+                  num_items: cartCount,
+                  value: total,
+                });
+                navigate('/checkout');
+              }}
               className="w-full py-4 bg-[#C8102E] hover:bg-[#9B0D24] text-white font-black text-sm rounded-2xl shadow-lg shadow-red-900/20 transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
             >
               <span>{t('كمّل طلبك دلوقتي (الدفع عند الاستلام)', 'Proceed to Secure Checkout')}</span>
